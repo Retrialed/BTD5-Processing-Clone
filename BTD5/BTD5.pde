@@ -1,21 +1,20 @@
-
+int fps = 60;
 
 void setup() {
-  size(1080, 720);
+  size(1920, 1080);
   background(200);
   noStroke();
   ellipseMode(RADIUS);
+  imageMode(CENTER);
   
-  AddButton(100, 200, 30, () -> {
-    background(random(255), random(255), random(255));
-  });
-  AddButton(200, 100, 30, () -> {
-    background(200);
-  });
+  setUpButtons();
 }
+
+int x, y = 2;
 
 void draw() {
   drawButtons();
+  System.out.println(frameRate);
 }
 
 void mousePressed() {
