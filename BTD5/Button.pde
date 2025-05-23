@@ -1,22 +1,32 @@
-ArrayList<Button> buttons = new ArrayList<Button>();;
+ArrayList<Button> buttons = new ArrayList<Button>();
+
 void drawButtons() {
   for (Button button : buttons) {
     button.drawButton();
+  }
+}
+
+void activateButtons() {
+  for (Button button : buttons) {
     button.activateButton();
   }
 }
 
-void AddButton(int xPos, int yPos, int radius) {
-  buttons.add(new Button(xPos, yPos, radius));
+void AddButton(int xPos, int yPos, int radius, Runnable funct) {
+  buttons.add(new Button(xPos, yPos, radius, funct));
 }
+
+
 
 class Button {
   int x, y, r;
+  Runnable action;
   
-  Button(int xPos, int yPos, int radius) {
+  Button(int xPos, int yPos, int radius, Runnable funct) {
     x = xPos;
     y = yPos;
     r = radius;
+    action = funct;
   }
   
   void drawButton() {
@@ -26,9 +36,8 @@ class Button {
   }
   
   void activateButton() {
-    if (mousePressed && overButton()) {
-      background(random(255), random(255), random(255));
-    }
+    if (overButton())
+      action.run();
   }
   
   boolean overButton() {
