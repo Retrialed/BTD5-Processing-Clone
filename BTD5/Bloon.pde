@@ -11,7 +11,11 @@ void runBloons() {
   int i = 0;
   while (i < bloons.size()) {
     Bloon bloon = bloons.get(i);
-    
+    if (!bloon.isAlive()) {
+      bloons.remove(i);
+      continue;
+    }
+      
     bloon.move();
     bloon.drawBloon();
     i++;
@@ -19,16 +23,16 @@ void runBloons() {
 }
 
 class Bloon {
-  private int hp, nextNode, typeID, arrID;
+  private int hp, nextNode, typeID;
   private float spd;
+  private boolean live = true;
   private PVector pos = startPos.copy();
   
   Bloon(int type) {
     typeID = type;
     hp = data(0);
     nextNode = 0;
-    spd = data(1) / 30.0;
-    arrID = bloons.size();
+    spd = data(1) / (float) speeds[0];
   }
   
   void dmg(int amt) {
@@ -36,8 +40,8 @@ class Bloon {
     money += amt;
     if (hp <= 0) {
       money += hp; //Removes extra cash from overflow
-      deleteSelf();
       spawnChildren(hp); //Cash comes back here
+      live = false;
     }
   }
   
@@ -47,16 +51,6 @@ class Bloon {
       child.dmg(-1 * overflow);
       child.pos = pos.copy();
       child.nextNode = nextNode;
-    }
-  }
-  
-  void deleteSelf() {
-    if (bloons.size() == 1)
-      bloons.remove(0);
-    else {
-      Bloon last = bloons.remove(bloons.size() - 1);
-      bloons.set(arrID, last);
-      last.arrID = arrID;
     }
   }
   
@@ -70,11 +64,15 @@ class Bloon {
       nextNode++;
       if (nextNode == pathNodes.length) {
         lives -= data(2);
-        deleteSelf();
+        live = false;
       }
     } else {
       pos.add(moveVec.normalize().mult(spd));
     }
+  }
+  
+  boolean isAlive() {
+    return live;
   }
   
   void drawBloon() {

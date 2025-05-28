@@ -1,10 +1,9 @@
 ArrayList<Button> buttons = new ArrayList<Button>();
 
-
 void setUpButtons() {
   addButton(1293, 959, 45, () -> {
-    fps = (fps == 30 ? 60 : 30);
-    frameRate(fps);
+    speedLevel = (speedLevel + 1) % speeds.length;
+    frameRate(speeds[speedLevel]);
   }).setImage("images/spd1.png");
   
   addButton(200, 100, 30, () -> {
@@ -64,8 +63,4 @@ class Button {
   boolean overButton() {
     return sq(x - mouseX) + sq(y - mouseY) < sq(r);
   }
-}
-
-public interface speedButton {
-
 }

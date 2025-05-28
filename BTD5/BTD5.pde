@@ -1,11 +1,12 @@
-int fps = 30;
+int[] speeds = {30, 60, 120};
+int speedLevel = 0;
 int money = 600;
 int lives = 250;
 
 PGraphics bgBuffer;
 PImage bg;
 
-boolean DRAWING_ON = true;
+boolean DRAWING_ON = false;
 ArrayList<PVector> points = new ArrayList<PVector>();
 
 void setup() {
@@ -14,7 +15,7 @@ void setup() {
   noStroke();
   ellipseMode(RADIUS);
   imageMode(CENTER);
-  frameRate(fps);
+  frameRate(speeds[speedLevel]);
   
   setUpButtons();
   
@@ -44,10 +45,9 @@ void draw() {
   if (egg % 30 == 0 && egg < 150) {
     addBloon(4);
   }
-  if (egg % 10 == 0 && bloons.size() > 0) {
-    bloons.get(0).dmg(1);
-  }
-  
+  //if (egg % 10 == 0 && bloons.size() > 0) {
+  //  bloons.get(0).dmg(1);
+  //}
   circle(mouseX, mouseY, 10);
   
   //drawMonkeys();
@@ -64,7 +64,7 @@ void drawGUI() {
 void mousePressed() {
   System.out.println(mouseX + ", " + mouseY);
   activateButtons();
-  buttons.get(0).setImage(fps == 30? "images/spd1.png" : "images/spd2.png");
+  buttons.get(0).setImage(speedLevel == 0? "images/spd1.png" : "images/spd2.png");
   
   if (DRAWING_ON) {
     PVector point = new PVector(mouseX, mouseY);
@@ -91,12 +91,12 @@ void keyPressed() {
   
     if (key == 'p' || key == 'P') {
       String str = "";
-      //str += "{";
+      str += "{";
       for (int i = 0; i < points.size(); i++) {
         PVector pt = points.get(i);
         str += "{" + int(pt.x) + ", " + int(pt.y) + "}, ";
       }
-      //str += "}";
+      str += "}";
       System.out.println(str);
     }
   }
