@@ -2,12 +2,12 @@ ArrayList<Button> buttons = new ArrayList<Button>();
 
 
 void setUpButtons() {
-  AddButton(100, 200, 45, () -> {
-    fps = (fps == 60 ? 120 : 60);
+  addButton(1293, 959, 45, () -> {
+    fps = (fps == 30 ? 60 : 30);
     frameRate(fps);
   }).setImage("images/spd1.png");
   
-  AddButton(200, 100, 30, () -> {
+  addButton(200, 100, 30, () -> {
     background(200);
   });
 }
@@ -24,7 +24,7 @@ void activateButtons() {
   }
 }
 
-Button AddButton(int xPos, int yPos, int radius, Runnable funct) {
+Button addButton(int xPos, int yPos, int radius, Runnable funct) {
   Button button = new Button(xPos, yPos, radius, funct);
   buttons.add(button);
   return button;
@@ -43,12 +43,13 @@ class Button {
   }
 
   void drawButton() {
-    fill(100);
     if (img != null)
       image(img, x, y);
-    else
+    else {
+      fill(100);
       circle(x, y, r);
-    fill(255);
+      fill(255);
+    }
   }
 
   void activateButton() {
@@ -63,4 +64,8 @@ class Button {
   boolean overButton() {
     return sq(x - mouseX) + sq(y - mouseY) < sq(r);
   }
+}
+
+public interface speedButton {
+
 }

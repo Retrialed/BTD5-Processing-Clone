@@ -1,45 +1,94 @@
 ArrayList<Bloon> bloons = new ArrayList<Bloon>();
+PVector startPos = new PVector(1244, 85);
 
-int[][] bloonData = new int[][]{
-  {2, 2, 2, 2} //example data
-};
-int[][] nodes = new int[][] {
-  {1,2}, {2, 3} //example data
-};
+Bloon addBloon(int type) {
+  Bloon bloon = new Bloon(type);
+  bloons.add(bloon);
+  return bloon;
+}
 
-PVector[] pathNodes = new PVector[nodes.length];
-
-
-PVector startPos = new PVector(0, 0);
+void runBloons() {
+  int i = 0;
+  while (i < bloons.size()) {
+    Bloon bloon = bloons.get(i);
+    
+    bloon.move();
+    bloon.drawBloon();
+    i++;
+  }
+}
 
 class Bloon {
-  int hp, nextNode, typeID, arrID;
-  PVector pos = startPos.copy();
+  private int hp, nextNode, typeID, arrID;
+  private float spd;
+  private PVector pos = startPos.copy();
+  private boolean dead = false;
+  
+  Bloon(int type) {
+    typeID = type;
+    hp = data(0);
+    nextNode = 0;
+    spd = data(1) / 30.0;
+    arrID = bloons.size();
+  }
   
   void dmg(int amt) {
     hp -= amt;
-    while (hp <= 0) {
-      typeID -= 1;
-      hp += bloonData[typeID][1];
-    }
-    if (typeID < 0)
+    money += amt;
+    if (hp <= 0) {
+      money += hp; //Removes extra cash from overflow
       deleteSelf();
+      spawnChildren(hp); //Cash comes back here
+    }
+  }
+  
+  void spawnChildren(int overflow) {
+    for (int i : children[typeID]) {
+      Bloon child = addBloon(i);
+      child.dmg(-1 * overflow);
+      child.pos = pos.copy();
+      child.nextNode = nextNode;
+    }
   }
   
   void deleteSelf() {
-    bloons.set(arrID, bloons.remove(bloons.size() - 1));
+    if (bloons.size() == 1)
+      bloons.remove(0);
+    else {
+      Bloon last = bloons.remove(bloons.size() - 1);
+      bloons.set(arrID, last);
+      last.arrID = arrID;
+    }
   }
   
+  boolean isDead() {
+    return dead;
+  }
+  
+  
   void move() {
-    int spd = bloonData[typeID][2]; //Speed will be held inside array. Accessed by reference to datatable
     PVector dest = pathNodes[nextNode];
+    PVector moveVec = PVector.sub(dest, pos);
     
-    PVector moveVec = dest.sub(pos);
-    float distMoved = spd / 60; //Spd in pixels/sec
-    
-    if (moveVec.magSq() < distMoved * distMoved)
-      pos = dest.clone();
-    else
-      pos.add(,)
+    if (moveVec.magSq() < spd * spd) {
+      pos = dest.copy();
+      nextNode++;
+      if (nextNode == pathNodes.length) {
+        lives -= data(2);
+        deleteSelf();
+      }
+    } else {
+      pos.add(moveVec.normalize().mult(spd));
+    }
+  }
+  
+  void drawBloon() {
+    fill(bloonColors[typeID]);
+    circle(pos.x, pos.y, 30);
+    fill(255);
+  }
+  
+  int data(int ind) {
+    return bloonData[typeID][ind];
   }
 }
