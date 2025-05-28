@@ -22,7 +22,6 @@ class Bloon {
   private int hp, nextNode, typeID, arrID;
   private float spd;
   private PVector pos = startPos.copy();
-  private boolean dead = false;
   
   Bloon(int type) {
     typeID = type;
@@ -59,10 +58,6 @@ class Bloon {
       bloons.set(arrID, last);
       last.arrID = arrID;
     }
-  }
-  
-  boolean isDead() {
-    return dead;
   }
   
   
