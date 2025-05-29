@@ -1,5 +1,4 @@
 ArrayList<Bloon> bloons = new ArrayList<Bloon>();
-PVector startPos = new PVector(1244, 85);
 
 Bloon addBloon(int type) {
   Bloon bloon = new Bloon(type);
@@ -12,26 +11,30 @@ void runBloons() {
   while (i < bloons.size()) {
     Bloon bloon = bloons.get(i);
     if (!bloon.isAlive()) {
-      bloons.remove(i);
+      Bloon last = bloons.remove(bloons.size() - 1);
+      
+      if (bloon != last)
+        bloons.set(i, last);
+      
       continue;
     }
       
-    bloon.move();
+    bloon.move(bloon.curNode + 1);
     bloon.drawBloon();
     i++;
   }
 }
 
 class Bloon {
-  private int hp, nextNode, typeID;
+  private int hp, curNode, typeID;
   private float spd;
   private boolean live = true;
-  private PVector pos = startPos.copy();
+  private PVector pos = pathNodes[0];
   
   Bloon(int type) {
     typeID = type;
     hp = data(0);
-    nextNode = 0;
+    curNode = 0;
     spd = data(1) / (float) speeds[0];
   }
   
@@ -46,22 +49,23 @@ class Bloon {
   }
   
   void spawnChildren(int overflow) {
+    int count = 0;
     for (int i : children[typeID]) {
       Bloon child = addBloon(i);
-      child.dmg(-1 * overflow);
       child.pos = pos.copy();
-      child.nextNode = nextNode;
+      child.curNode = curNode;
+      child.dmg(-1 * overflow);
     }
   }
   
   
-  void move() {
+  void move(int nextNode) {
     PVector dest = pathNodes[nextNode];
     PVector moveVec = PVector.sub(dest, pos);
     
     if (moveVec.magSq() < spd * spd) {
       pos = dest.copy();
-      nextNode++;
+      nextNode += Math.signum(nextNode - curNode);
       if (nextNode == pathNodes.length) {
         lives -= data(2);
         live = false;

@@ -17,10 +17,8 @@ void setup() {
   imageMode(CENTER);
   frameRate(speeds[speedLevel]);
   
-  setUpButtons();
-  
-  for (int i = 0; i < nodes.length; i++)
-    pathNodes[i] = new PVector(nodes[i][0], nodes[i][1]);
+  setupButtons();
+  setupData(); 
     
   bgBuffer = createGraphics(width, height);
   bgBuffer.beginDraw();
@@ -43,11 +41,11 @@ void draw() {
   
   egg++;
   if (egg % 30 == 0 && egg < 150) {
-    addBloon(4);
+    addBloon(7);
   }
-  //if (egg % 10 == 0 && bloons.size() > 0) {
-  //  bloons.get(0).dmg(1);
-  //}
+  if (egg % 15 == 0 && bloons.size() > 0) {
+    bloons.get(0).dmg(3);
+  }
   circle(mouseX, mouseY, 10);
   
   //drawMonkeys();
@@ -62,11 +60,11 @@ void drawGUI() {
 }
 
 void mousePressed() {
-  System.out.println(mouseX + ", " + mouseY);
   activateButtons();
   buttons.get(0).setImage(speedLevel == 0? "images/spd1.png" : "images/spd2.png");
   
   if (DRAWING_ON) {
+    System.out.println(mouseX + ", " + mouseY);
     PVector point = new PVector(mouseX, mouseY);
     points.add(point);
   

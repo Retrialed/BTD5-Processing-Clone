@@ -1,6 +1,6 @@
 ArrayList<Button> buttons = new ArrayList<Button>();
 
-void setUpButtons() {
+void setupButtons() {
   addButton(1293, 959, 45, () -> {
     speedLevel = (speedLevel + 1) % speeds.length;
     frameRate(speeds[speedLevel]);
