@@ -29,8 +29,8 @@ void runBloons() {
 class Bloon {
   private int hp, nextNode, typeID;
   private float spd;
-  boolean live = true;
-  private PVector pos = pathNodes[0];
+  private boolean live = true;
+  PVector pos = pathNodes[0];
   private PVector vel = null;
   
   Bloon(int type) {
