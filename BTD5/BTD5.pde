@@ -1,10 +1,13 @@
-int[] speeds = {30, 60, 120};
-int speedLevel = 0;
+int[] speeds = {30, 60, 120, 240};
+int speedLevel = 1;
 int money = 600;
 int lives = 250;
+int frame = 0;
+int wave = 0;
+int waveProgress = 0;
+boolean waveOngoing = false;
 
-PGraphics bgBuffer;
-PImage bg;
+PGraphics track, gui;
 
 boolean DRAWING_ON = false;
 ArrayList<PVector> points = new ArrayList<PVector>();
@@ -20,70 +23,100 @@ void setup() {
   setupButtons();
   setupData(); 
     
-  bgBuffer = createGraphics(width, height);
-  bgBuffer.beginDraw();
-  bgBuffer.noStroke();
-  bgBuffer.imageMode(CENTER);
-  bgBuffer.image(loadImage("images/sprint_track-map.png"), width/2, height/2);
-  bgBuffer.image(loadImage("images/sidebar.png"), width/2, height/2);
-  bgBuffer.endDraw();
   
-  addBloon(4);
 }
 
-int egg = 0;
-
 void draw() {
-  image(bgBuffer, width/ 2, height / 2);
-  drawButtons();
-  drawGUI();
-  runBloons();
+  image(track, width/ 2, height / 2);
+  if (waveOngoing == true) {
+    runBloons();
+    manageWave();
+    frame++;
+  }
   
-  egg++;
-  if (egg % 30 == 0 && egg < 150) {
-    addBloon(7);
-  }
-  if (egg % 15 == 0 && bloons.size() > 0) {
-    bloons.get(0).dmg(3);
-  }
+  drawGUI();
+  drawButtons();
   circle(mouseX, mouseY, 10);
   
   //drawMonkeys();
   //System.out.println(frameRate);
 }
 
+void manageWave() {
+  int[][] waveData = waves[wave];
+  
+  if (waveProgress >= waveData.length) {
+    if (bloons.size() == 0) {
+      waveOngoing = false;
+      buttons.get(0).setImage("images/preround.png");
+      frame = 0;
+      waveProgress = 0;
+      speedLevel = 1;
+      frameRate(speeds[speedLevel]);
+      return;
+    }
+    return;
+  }
+  
+  int[] subWave = waveData[waveProgress];
+  int firstSpawnTick = subWave[0];
+  int spawnInterval = subWave[1];
+  int spawnCount = subWave[2];
+  int spawnType = subWave[3];
+  
+  if (frame > firstSpawnTick + spawnInterval * (spawnCount - 1)) {
+    waveProgress++;
+    return; 
+  }
+    
+  if ((frame - firstSpawnTick) % spawnInterval == 0)
+    addBloon(spawnType);
+}
+
 void drawGUI() {
+  image(gui, width/2, height/2);
   textAlign(RIGHT, CENTER);
   textSize(20);
   text(money, 1385, 65);
   text(lives, 1385, 115);
+  text("FPS: " + (int)frameRate + "/" + speeds[speedLevel], 1385, 165);
 }
 
 void mousePressed() {
+  System.out.println(mouseX + ", " + mouseY);
   activateButtons();
-  buttons.get(0).setImage(speedLevel == 0? "images/spd1.png" : "images/spd2.png");
+  
+  if (mouseButton == RIGHT)
+    for (int i = 0; i < 1 && bloons.size() != 0; i++)
+      bloons.get(0).live = false;
+      
+  if (waveOngoing)
+    buttons.get(0).setImage(speedLevel == 1? "images/spd1.png" : "images/spd2.png");
   
   if (DRAWING_ON) {
-    System.out.println(mouseX + ", " + mouseY);
     PVector point = new PVector(mouseX, mouseY);
     points.add(point);
   
-    bgBuffer.beginDraw();
-    bgBuffer.fill(255, 0, 0); // red
-    bgBuffer.circle(point.x, point.y, 30);
-    bgBuffer.endDraw();
+    track.beginDraw();
+    track.fill(255, 0, 0); // red
+    track.circle(point.x, point.y, 30);
+    track.endDraw();
   }
 }
 
 void keyPressed() {
+  if (key == 'e')
+    for (Bloon bl : bloons)
+      bl.live = false;
+  
   if (DRAWING_ON) {
     if (key == 'q' || key == 'Q') {
       if (!points.isEmpty()) {
         PVector last = points.remove(points.size() - 1);
-        bgBuffer.beginDraw();
-        bgBuffer.fill(0, 255, 0); // green
-        bgBuffer.circle(last.x, last.y, 30);
-        bgBuffer.endDraw();
+        track.beginDraw();
+        track.fill(0, 255, 0); // green
+        track.circle(last.x, last.y, 30);
+        track.endDraw();
       }
     }
   
@@ -94,7 +127,7 @@ void keyPressed() {
         PVector pt = points.get(i);
         str += "{" + int(pt.x) + ", " + int(pt.y) + "}, ";
       }
-      str += "}";
+      str += "};";
       System.out.println(str);
     }
   }

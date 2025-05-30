@@ -19,23 +19,25 @@ void runBloons() {
       continue;
     }
       
-    bloon.move(bloon.curNode + 1);
+    bloon.move();
+    bloon.move();
     bloon.drawBloon();
     i++;
   }
 }
 
 class Bloon {
-  private int hp, curNode, typeID;
+  private int hp, nextNode, typeID;
   private float spd;
-  private boolean live = true;
+  boolean live = true;
   private PVector pos = pathNodes[0];
+  private PVector vel = null;
   
   Bloon(int type) {
     typeID = type;
     hp = data(0);
-    curNode = 0;
-    spd = data(1) / (float) speeds[0];
+    nextNode = 0;
+    spd = data(1) / (float) speeds[0] / 2.0;
   }
   
   void dmg(int amt) {
@@ -53,25 +55,30 @@ class Bloon {
     for (int i : children[typeID]) {
       Bloon child = addBloon(i);
       child.pos = pos.copy();
-      child.curNode = curNode;
+      child.nextNode = nextNode;
+      for (int j = 0; j < count * 4; j++)
+        child.move();
       child.dmg(-1 * overflow);
+      count++;
     }
   }
   
   
-  void move(int nextNode) {
-    PVector dest = pathNodes[nextNode];
-    PVector moveVec = PVector.sub(dest, pos);
+  void move() {
+    if (nextNode >= pathNodes.length) {return;}
     
-    if (moveVec.magSq() < spd * spd) {
+    PVector dest = pathNodes[nextNode];
+    vel = PVector.sub(dest, pos);
+    
+    if (vel.magSq() < spd * spd) {
       pos = dest.copy();
-      nextNode += Math.signum(nextNode - curNode);
-      if (nextNode == pathNodes.length) {
+      nextNode++;
+      if (nextNode >= pathNodes.length) {
         lives -= data(2);
         live = false;
       }
     } else {
-      pos.add(moveVec.normalize().mult(spd));
+      pos.add(vel.normalize().mult(spd));
     }
   }
   
@@ -80,9 +87,15 @@ class Bloon {
   }
   
   void drawBloon() {
-    fill(bloonColors[typeID]);
-    circle(pos.x, pos.y, 30);
-    fill(255);
+    if (10 <= typeID && typeID <= 12) {
+      pushMatrix();
+      translate(pos.x, pos.y);
+      rotate(vel.heading());
+      image(bloonSprites[typeID], 0, 0);
+      popMatrix();
+    } else {
+      image(bloonSprites[typeID], pos.x, pos.y);
+    }
   }
   
   int data(int ind) {
