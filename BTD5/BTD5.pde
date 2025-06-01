@@ -22,8 +22,20 @@ void setup() {
   imageMode(CENTER);
   frameRate(speeds[speedLevel]);
   
+  setupData();
+  
+}
+
+void setupData() {
   setupButtons();
-  setupData(); 
+  setupBloonTypes();
+  setupProjTypes();
+  setupAttacks();
+  
+  
+  setupMonkeyTypes();
+  for (int i = 0; i < nodes.length; i++)
+    pathNodes[i] = new PVector(nodes[i][0], nodes[i][1]);
 }
 
 void draw() {
@@ -40,19 +52,29 @@ void draw() {
     runBloons();
   }
   
-  if (testFrames % 2 == 0) {
-    addProj(0, new PVector(width / 2, height / 2 + 150), 0);
-  }
+  //if (testFrames % 2 == 0) {
+  //  addProj(0, new PVector(width / 2, height / 2 + 150), 0);
+  //}
   
+  runMonkeys();
   runProjs();
   
   drawGUI();
   drawButtons();
   
-  //drawMonkeys();
   interactionQueue = new ArrayList<Bloon>();
   testFrames++;
 }
+
+
+
+
+
+
+
+
+
+
 
 void manageWave() {
   int[][] waveData = waves[wave];
@@ -111,6 +133,10 @@ void drawGUI() {
 void mousePressed() {
   //System.out.println(mouseX + ", " + mouseY);
   activateButtons();
+  
+  if (mouseButton == LEFT) {
+    addMonkey(0, mouseX, mouseY);
+  }
   
   if (mouseButton == RIGHT)
     for (int i = 0; i < 1 && bloons.size() != 0; i++) {

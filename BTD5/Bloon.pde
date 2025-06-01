@@ -1,10 +1,11 @@
 ArrayList<Bloon> bloons = new ArrayList<Bloon>();
 ArrayList<Bloon> interactionQueue = new ArrayList<Bloon>();
 
-Bloon addBloon(int type) {
+Bloon addBloon(int typeID) {
   Bloon bloon;
+  BloonType type = BloonTypes[typeID];
   
-  if ((13 <= type && type <= 22) || (34 <= type && type <= 43)) {
+  if (type.regrow) {
     bloon = new RegrowBloon(type);
   } else {
     bloon = new Bloon(type);
@@ -13,16 +14,16 @@ Bloon addBloon(int type) {
   return bloon;
 }
 
-RegrowBloon addRegrowBloon(int type) {
-  RegrowBloon regrow = new RegrowBloon(type);
+RegrowBloon addRegrowBloon(int typeID) {
+  RegrowBloon regrow = new RegrowBloon(BloonTypes[typeID]);
   bloons.add(regrow);
   return regrow;
 }
 
-RegrowBloon addRegrowBloon(int type, RegrowBloon parent) {
-  RegrowBloon regrow = addRegrowBloon(type);
+RegrowBloon addRegrowBloon(int typeID, RegrowBloon parent) {
+  RegrowBloon regrow = addRegrowBloon(typeID);
   regrow.heritage.addAll(parent.heritage);
-  regrow.heritage.add(parent.typeID);
+  regrow.heritage.add(parent.type.ID);
   return regrow;
 }
 
@@ -52,7 +53,7 @@ class RegrowBloon extends Bloon {
    ArrayList<Integer> heritage = new ArrayList<>();
    int timer = 0;
    
-   RegrowBloon(int type) {
+   RegrowBloon(BloonType type) {
      super(type);
    }
    
@@ -60,11 +61,9 @@ class RegrowBloon extends Bloon {
      super.move();
      timer++;
      if (timer >= 120 && heritage.size() != 0) {
-       live = false;
-       RegrowBloon grown = addRegrowBloon(heritage.remove(heritage.size() - 1));
-       grown.pos = pos;
-       grown.curNode = curNode;
-       grown.heritage = heritage;
+       timer = 0;
+       type = BloonTypes[(heritage.remove(heritage.size() - 1))];
+       hp = type.hp;
      }
    }
    
@@ -82,7 +81,7 @@ class RegrowBloon extends Bloon {
       
       ArrayList<Bloon> spawned = new ArrayList<Bloon>();
     
-      for (int i : children[typeID]) {
+      for (int i : type.children) {
         spawned.addAll(addRegrowBloon(i, this).dmg(-1 * hp, 1));
       }
       
@@ -96,21 +95,23 @@ class RegrowBloon extends Bloon {
 }
 
 class Bloon {
-  int hp, curNode, typeID;
+  int hp, curNode;
   boolean live = true;
   PVector pos = pathNodes[0].copy();
   float angle = 0;
   ArrayList<BloonComponent> components = new ArrayList<>();
+  
+  BloonType type;
   
   void addComponent(BloonComponent comp) {
     comp.bloon = this;
     components.add(comp);
   }
   
-  Bloon(int type) {
-    typeID = type;
-    hp = bloonData[typeID][0];
+  Bloon(BloonType bType) {
+    type = bType;
     curNode = 0;
+    hp = type.hp;
   }
   
   ArrayList<Bloon> dmg(int amt) {
@@ -123,7 +124,7 @@ class Bloon {
       child.curNode = curNode;
       
       for (int j = 0; j < (count + 1) / 2; j++) {
-        child.move(count % 2 == 0? 1 : -1, 2);
+        child.move(count % 2 == 0? 1 : -1, (float) 675 / type.speed);
       }
       
       count++;
@@ -146,7 +147,7 @@ class Bloon {
       
       ArrayList<Bloon> spawned = new ArrayList<Bloon>();
     
-      for (int i : children[typeID]) {
+      for (int i : type.children) {
         spawned.addAll(addBloon(i).dmg(-1 * hp, 1));
       }
       
@@ -162,14 +163,14 @@ class Bloon {
     move(1, 1);
   }
   
-  void move(int increment, int mult) {
+  void move(int increment, float mult) {
     if (!live)
       return;
   
     int nextNode = (increment == 1)? curNode + increment : curNode;
   
     if (nextNode >= pathNodes.length) {
-      lives -= bloonData[typeID][2];
+      lives -= type.rbe;
       live = false;
       return;
     }
@@ -184,7 +185,7 @@ class Bloon {
     float dx = dest.x - pos.x;
     float dy = dest.y - pos.y;
     float distSq = dx * dx + dy * dy;
-    float spdSq = bloonData[typeID][1] * bloonData[typeID][1] / 2025.0 * mult * mult;
+    float spdSq = type.speed * type.speed / 2025.0 * mult * mult;
   
     while (distSq <= spdSq) {
       pos.set(dest);
@@ -194,7 +195,7 @@ class Bloon {
       nextNode = (increment == -1) ? curNode : curNode + increment;
   
       if (nextNode >= pathNodes.length) {
-        lives -= bloonData[typeID][2];
+        lives -= type.rbe;
         live = false;
         return;
       }
@@ -223,15 +224,15 @@ class Bloon {
       return;
     }
     
-    if (10 <= typeID && typeID <= 12) {
+    if (10 <= type.ID && type.ID <= 12) {
       pushMatrix();
       translate(pos.x, pos.y);
       PVector dest = pathNodes[curNode];
-      rotate(atan2(dest.y - pos.y, dest.x - pos.x) + (float) Math.PI);
-      image(bloonSprites[typeID], 0, 0);
+      rotate(atan2(pos.y - dest.y, pos.x - dest.x));
+      image(type.sprite, 0, 0);
       popMatrix();
     } else {
-      image(bloonSprites[typeID], pos.x, pos.y);
+      image(type.sprite, pos.x, pos.y);
     }
   }
 }

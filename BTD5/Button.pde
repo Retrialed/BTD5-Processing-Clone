@@ -34,7 +34,7 @@ void setupButtons() {
   
   addButton(1302, 242, 30, () -> {
     background(200);
-  }).setImage("images/monkeys/dart.png");
+  }).setImage("images/monkeys/Dart.png");
 }
 
 void drawButtons() {

@@ -2,10 +2,8 @@ ArrayList<Proj> projs = new ArrayList<Proj>();
 
 Proj addProj(int type, PVector position, float angle) {
   Proj proj = new Proj(type, position, angle);
-  
-  int[] data = projData[type];
-  if (data[0] == 0) {
-    proj.addComponent(new Piercing(data[5]));
+  if (ProjTypes[type].dmgType == 0) {
+    proj.addComponent(new Piercing(ProjTypes[type].extra));
   }
   projs.add(proj);
   return proj;
@@ -33,20 +31,17 @@ void runProjs() {
 }
 
 class Proj {
+  ProjType type;
   PVector pos, vel;
-  int dmg, r, time, dmgType;
-  float spd;
+  int time;
   boolean live = true;
   ArrayList<Bloon> alreadyHit = new ArrayList<Bloon>();
   ArrayList<ProjComponent> components = new ArrayList<>();
   
-  Proj(int type, PVector position, float angle) {
-    int[] data = projData[type];
-    dmg = data[1];
-    r = data[2];
-    spd = data[3];
-    time = data[4];
-    vel = new PVector(spd, 0).rotate(angle);
+  Proj(int typeID, PVector position, float angle) {
+    type = ProjTypes[typeID];
+    vel = new PVector(type.speed, 0).rotate(angle);
+    time = type.lifespan;
     pos = position;
   }
   
@@ -67,21 +62,26 @@ class Proj {
   
   void drawProj() {
     if (!live) return;
-    circle(pos.x, pos.y, r);
+    
+    pushMatrix();
+    translate(pos.x, pos.y);
+    rotate(atan2(vel.y, vel.x));
+    image(type.sprite, 0, 0);
+    popMatrix();
   }
   
   void dmg(Bloon b) {
     for (ProjComponent comp : components) {comp.onHit(b);}
     
     if (components.size() == 0) {
-      alreadyHit.addAll(b.dmg(dmg));
+      alreadyHit.addAll(b.dmg(type.damage));
     }
   }
   
   void checkForBloon() {
     for (Bloon b : interactionQueue) {
       if (!live) return;
-      if (alreadyHit.indexOf(b) == -1 && sq(pos.x - b.pos.x) + sq(pos.y - b.pos.y) < sq(r + bloonData[b.typeID][3])) {
+      if (alreadyHit.indexOf(b) == -1 && sq(pos.x - b.pos.x) + sq(pos.y - b.pos.y) < sq(type.radius + b.type.radius)) {
         dmg(b);
       }
     }
@@ -104,12 +104,12 @@ class Piercing extends ProjComponent {
   void onHit(Bloon b) {
     if (!b.live) return;
     
-    if (b.typeID == 23 || b.typeID == 44) {
+    if (b.type.ID == 23 || b.type.ID == 44) {
       proj.live = false;
       return;
     }
     
-    proj.alreadyHit.addAll(b.dmg(proj.dmg));
+    proj.alreadyHit.addAll(b.dmg(proj.type.damage));
     p--;
     if (p <= 0) proj.live = false;
   }
