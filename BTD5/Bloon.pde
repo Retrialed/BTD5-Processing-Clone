@@ -2,9 +2,28 @@ ArrayList<Bloon> bloons = new ArrayList<Bloon>();
 ArrayList<Bloon> interactionQueue = new ArrayList<Bloon>();
 
 Bloon addBloon(int type) {
-  Bloon bloon = new Bloon(type);
+  Bloon bloon;
+  
+  if ((13 <= type && type <= 22) || (34 <= type && type <= 43)) {
+    bloon = new RegrowBloon(type);
+  } else {
+    bloon = new Bloon(type);
+  }
   bloons.add(bloon);
   return bloon;
+}
+
+RegrowBloon addRegrowBloon(int type) {
+  RegrowBloon regrow = new RegrowBloon(type);
+  bloons.add(regrow);
+  return regrow;
+}
+
+RegrowBloon addRegrowBloon(int type, RegrowBloon parent) {
+  RegrowBloon regrow = addRegrowBloon(type);
+  regrow.heritage.addAll(parent.heritage);
+  regrow.heritage.add(parent.typeID);
+  return regrow;
 }
 
 void runBloons() {
@@ -12,6 +31,8 @@ void runBloons() {
   while (i < bloons.size()) {
     Bloon bloon = bloons.get(i);
     if (!bloon.live) {
+      
+      //bloons.remove(i);
       Bloon last = bloons.remove(bloons.size() - 1);
       
       if (bloon != last)
@@ -20,10 +41,51 @@ void runBloons() {
       continue;
     }
       
-    bloon.drawBloon();
     bloon.move();
+    bloon.drawBloon();
     interactionQueue.add(bloon);
     i++;
+  }
+}
+
+class RegrowBloon extends Bloon {
+   ArrayList<Integer> heritage = new ArrayList<>();
+   int timer = 0;
+   
+   RegrowBloon(int type) {
+     super(type);
+   }
+   
+   void move() {
+     super.move();
+     timer++;
+     if (timer >= 120 && heritage.size() != 0) {
+       live = false;
+       RegrowBloon grown = addRegrowBloon(heritage.remove(heritage.size() - 1));
+       grown.pos = pos;
+       grown.curNode = curNode;
+       grown.heritage = heritage;
+     }
+   }
+   
+   ArrayList<Bloon> spawn(int overflow, int id) {
+    
+    ArrayList<Bloon> spawned = new ArrayList<Bloon>();
+    
+    for (int i : children[id]) {
+      ArrayList<Bloon> directSpawn = addRegrowBloon(i, this).dmg(overflow, 1);
+      
+      if (overflow < bloonData[i][0]) {
+        if (!directSpawn.isEmpty()) {
+          Bloon lastBloon = directSpawn.get(0);
+          spawned.add(lastBloon);
+        }
+      } else {
+        spawned.addAll(directSpawn);
+      }
+    }
+    
+    return spawned;
   }
 }
 
@@ -32,18 +94,42 @@ class Bloon {
   boolean live = true;
   PVector pos = pathNodes[0].copy();
   float angle = 0;
+  ArrayList<BloonComponent> components = new ArrayList<>();
+  
+  void addComponent(BloonComponent comp) {
+    comp.bloon = this;
+    components.add(comp);
+  }
   
   Bloon(int type) {
     typeID = type;
-    hp = data(0);
+    hp = bloonData[typeID][0];
     curNode = 0;
   }
   
-  void dmg(Proj proj) {
-    proj.alreadyHit.addAll(dmg(proj.dmg));
+  ArrayList<Bloon> dmg(int amt) {
+    ArrayList<Bloon> spawned = dmg(amt, 1);
+    
+    int count = 0;
+        
+    for (Bloon child : spawned) {
+      child.pos = pos.copy();
+      child.curNode = curNode;
+      
+      for (int j = 0; j < (count + 1) / 2; j++) {
+        child.move(count % 2 == 0? 1 : -1, 2);
+      }
+      
+      count++;
+    }
+    
+    return spawned;
   }
   
-  ArrayList<Bloon> dmg(int amt) {
+  ArrayList<Bloon> dmg(int amt, int placeHolder) {
+    if (amt < 0)
+      amt *= -1;
+    
     if (!live)
       return new ArrayList<Bloon>();
     
@@ -52,7 +138,9 @@ class Bloon {
     if (hp <= 0) {
       live = false;
       
-      return spawnChildren(hp);
+      ArrayList<Bloon> spawned = spawn(-1 * hp, typeID);
+      
+      return spawned;
     }
     
     ArrayList<Bloon> listWithSelf = new ArrayList<Bloon>();
@@ -60,38 +148,20 @@ class Bloon {
     return listWithSelf;
   }
   
-  ArrayList<Bloon> spawnChildren(int overflow) {
-    overflow *= -1;
-    ArrayList<Integer> spawned = getSpawned(overflow, typeID);
-    ArrayList<Bloon> spawnedBloons = new ArrayList<>();
+  ArrayList<Bloon> spawn(int overflow, int id) {
     
-    int count = 0;
-    for (int i : spawned) {
-      Bloon child = addBloon(i);
-      child.pos = pos.copy();
-      child.curNode = curNode;
-      
-      for (int j = 0; j < (count + 1) / 2; j++) {
-        child.move(count % 2 == 0? 1 : -1, 2);
-      }
-      
-      spawnedBloons.add(child);
-      count++;
-    }
-    
-    return spawnedBloons;
-  }
-  
-  ArrayList<Integer> getSpawned(int overflow, int id) {
-    ArrayList<Integer> spawned = new ArrayList<>();
+    ArrayList<Bloon> spawned = new ArrayList<Bloon>();
     
     for (int i : children[id]) {
+      ArrayList<Bloon> directSpawn = addBloon(i).dmg(overflow, 1);
+      
       if (overflow < bloonData[i][0]) {
-        money += overflow;
-        spawned.add(i);
+        if (!directSpawn.isEmpty()) {
+          Bloon lastBloon = directSpawn.get(0);
+          spawned.add(lastBloon);
+        }
       } else {
-        money += bloonData[i][0];
-        spawned.addAll(getSpawned(overflow - bloonData[i][0], i));
+        spawned.addAll(directSpawn);
       }
     }
     
@@ -102,63 +172,67 @@ class Bloon {
     move(1, 1);
   }
   
-void move(int increment, int mult) {
-  if (!live)
-    return;
-
-  int nextNode = (increment == 1)? curNode + increment : curNode;
-
-  if (nextNode >= pathNodes.length) {
-    lives -= data(2);
-    live = false;
-    return;
-  }
-
-  if (nextNode < 0) {
-    pos.set(pathNodes[0]);
-    curNode = 0;
-    return;
-  }
-
-  PVector dest = pathNodes[nextNode];
-  float dx = dest.x - pos.x;
-  float dy = dest.y - pos.y;
-  float distSq = dx * dx + dy * dy;
-  float spdSq = data(1) * data(1) / 2025.0 * mult * mult;
-
-  while (distSq <= spdSq) {
-    pos.set(dest);
-    spdSq -= distSq;
-
-    curNode = constrain(curNode + increment, 0, pathNodes.length - 1);    
-    nextNode = (increment == -1) ? curNode : curNode + increment;
-
+  void move(int increment, int mult) {
+    if (!live)
+      return;
+  
+    int nextNode = (increment == 1)? curNode + increment : curNode;
+  
     if (nextNode >= pathNodes.length) {
-      lives -= data(2);
+      lives -= bloonData[typeID][2];
       live = false;
       return;
     }
-
-    if (curNode + increment < 0) {
+  
+    if (nextNode < 0) {
       pos.set(pathNodes[0]);
       curNode = 0;
       return;
     }
-
-
-    dest = pathNodes[nextNode];
-    dx = dest.x - pos.x;
-    dy = dest.y - pos.y;
-    distSq = dx * dx + dy * dy;
+  
+    PVector dest = pathNodes[nextNode];
+    float dx = dest.x - pos.x;
+    float dy = dest.y - pos.y;
+    float distSq = dx * dx + dy * dy;
+    float spdSq = bloonData[typeID][1] * bloonData[typeID][1] / 2025.0 * mult * mult;
+  
+    while (distSq <= spdSq) {
+      pos.set(dest);
+      spdSq -= distSq;
+  
+      curNode = constrain(curNode + increment, 0, pathNodes.length - 1);    
+      nextNode = (increment == -1) ? curNode : curNode + increment;
+  
+      if (nextNode >= pathNodes.length) {
+        lives -= bloonData[typeID][2];
+        live = false;
+        return;
+      }
+  
+      if (curNode + increment < 0) {
+        pos.set(pathNodes[0]);
+        curNode = 0;
+        return;
+      }
+  
+  
+      dest = pathNodes[nextNode];
+      dx = dest.x - pos.x;
+      dy = dest.y - pos.y;
+      distSq = dx * dx + dy * dy;
+    }
+  
+    float scale = sqrt(spdSq / distSq);
+    pos.x += scale * dx;
+    pos.y += scale * dy;
   }
-
-  float scale = sqrt(spdSq / distSq);
-  pos.x += scale * dx;
-  pos.y += scale * dy;
-}
 
   
   void drawBloon() {
+    if (!live) {
+      return;
+    }
+    
     if (10 <= typeID && typeID <= 12) {
       pushMatrix();
       translate(pos.x, pos.y);
@@ -170,8 +244,8 @@ void move(int increment, int mult) {
       image(bloonSprites[typeID], pos.x, pos.y);
     }
   }
-  
-  int data(int ind) {
-    return bloonData[typeID][ind];
-  }
+}
+
+abstract class BloonComponent {
+  Bloon bloon;
 }

@@ -1,3 +1,5 @@
+import java.util.Arrays;
+
 int[] speeds = {60, 120, 240};
 int speedLevel = 0;
 int money = 600;
@@ -40,8 +42,8 @@ void draw() {
     runBloons();
   }
   
-  if (testFrames == 0) {
-    addProj();
+  if (testFrames % 10 == 0) {
+    addProj(0, new PVector(width / 2, height / 2 + 150), 0);
   }
   
   runProjs();
@@ -50,7 +52,6 @@ void draw() {
   drawButtons();
   
   //drawMonkeys();
-  //System.out.println(frameRate);
   interactionQueue = new ArrayList<Bloon>();
   testFrames++;
 }
@@ -114,8 +115,10 @@ void mousePressed() {
   activateButtons();
   
   if (mouseButton == RIGHT)
-    for (int i = 0; i < 1 && bloons.size() != 0; i++)
-      bloons.get(0).dmg(2);
+    for (int i = 0; i < 1 && bloons.size() != 0; i++) {
+      Bloon b = bloons.get(0);
+      b.dmg(b.hp);
+    }
       
   if (waveOngoing)
     buttons.get(0).setImage(speedLevel == 0? "images/spd1.png" : "images/spd2.png");
