@@ -1,5 +1,3 @@
-import java.util.Arrays;
-
 int[] speeds = {60, 120, 240};
 int speedLevel = 0;
 int money = 600;
