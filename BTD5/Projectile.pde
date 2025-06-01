@@ -23,7 +23,9 @@ void runProjs() {
       
       continue;
     }
-      
+    
+    proj.time--;
+    proj.move();
     proj.move();
     proj.drawProj();
     i++;
@@ -61,8 +63,6 @@ class Proj {
     
     pos.add(vel);
     checkForBloon();
-    
-    time--;
   }
   
   void drawProj() {
@@ -102,6 +102,8 @@ class Piercing extends ProjComponent {
   }
   
   void onHit(Bloon b) {
+    if (!b.live) return;
+    
     if (b.typeID == 23 || b.typeID == 44) {
       proj.live = false;
       return;

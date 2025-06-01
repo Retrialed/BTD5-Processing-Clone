@@ -68,24 +68,30 @@ class RegrowBloon extends Bloon {
      }
    }
    
-   ArrayList<Bloon> spawn(int overflow, int id) {
+   ArrayList<Bloon> dmg(int amt, int placeHolder) {
+    if (amt < 0)
+      amt *= -1;
     
-    ArrayList<Bloon> spawned = new ArrayList<Bloon>();
+    if (!live)
+      return new ArrayList<Bloon>();
     
-    for (int i : children[id]) {
-      ArrayList<Bloon> directSpawn = addRegrowBloon(i, this).dmg(overflow, 1);
+    money += Math.min(hp, amt);
+    hp -= amt;
+    if (hp <= 0) {
+      live = false;
       
-      if (overflow < bloonData[i][0]) {
-        if (!directSpawn.isEmpty()) {
-          Bloon lastBloon = directSpawn.get(0);
-          spawned.add(lastBloon);
-        }
-      } else {
-        spawned.addAll(directSpawn);
+      ArrayList<Bloon> spawned = new ArrayList<Bloon>();
+    
+      for (int i : children[typeID]) {
+        spawned.addAll(addRegrowBloon(i, this).dmg(-1 * hp, 1));
       }
+      
+      return spawned;
     }
     
-    return spawned;
+    ArrayList<Bloon> listWithSelf = new ArrayList<Bloon>();
+    listWithSelf.add(this);
+    return listWithSelf;
   }
 }
 
@@ -138,7 +144,11 @@ class Bloon {
     if (hp <= 0) {
       live = false;
       
-      ArrayList<Bloon> spawned = spawn(-1 * hp, typeID);
+      ArrayList<Bloon> spawned = new ArrayList<Bloon>();
+    
+      for (int i : children[typeID]) {
+        spawned.addAll(addBloon(i).dmg(-1 * hp, 1));
+      }
       
       return spawned;
     }
@@ -146,26 +156,6 @@ class Bloon {
     ArrayList<Bloon> listWithSelf = new ArrayList<Bloon>();
     listWithSelf.add(this);
     return listWithSelf;
-  }
-  
-  ArrayList<Bloon> spawn(int overflow, int id) {
-    
-    ArrayList<Bloon> spawned = new ArrayList<Bloon>();
-    
-    for (int i : children[id]) {
-      ArrayList<Bloon> directSpawn = addBloon(i).dmg(overflow, 1);
-      
-      if (overflow < bloonData[i][0]) {
-        if (!directSpawn.isEmpty()) {
-          Bloon lastBloon = directSpawn.get(0);
-          spawned.add(lastBloon);
-        }
-      } else {
-        spawned.addAll(directSpawn);
-      }
-    }
-    
-    return spawned;
   }
   
   void move() {
