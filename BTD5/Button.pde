@@ -13,6 +13,13 @@ void setupButtons() {
   gui.noStroke();
   gui.imageMode(CENTER);
   gui.image(loadImage("images/sidebar.png"), width/2, height/2);
+  
+  if (DRAWING_ON) {
+    for (int i = 0; i < nodes.length; i++) {
+      points.add(new PVector(nodes[i][0], nodes[i][1]));
+    } 
+  }
+  
   gui.endDraw();
   
   addButton(1293, 959, 45, () -> {

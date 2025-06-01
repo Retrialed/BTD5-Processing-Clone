@@ -1,7 +1,7 @@
-int[] speeds = {30, 60, 120, 240};
-int speedLevel = 1;
+int[] speeds = {60, 120, 240};
+int speedLevel = 0;
 int money = 600;
-int lives = 250;
+int lives = 200;
 int frame = 0;
 int wave = 0;
 int waveProgress = 0;
@@ -12,8 +12,10 @@ PGraphics track, gui;
 boolean DRAWING_ON = false;
 ArrayList<PVector> points = new ArrayList<PVector>();
 
+int testFrames = 0;
+
 void setup() {
-  size(1440, 1080);
+  size(1440, 1080, P2D);
   background(200);
   noStroke();
   ellipseMode(RADIUS);
@@ -22,24 +24,35 @@ void setup() {
   
   setupButtons();
   setupData(); 
-    
-  
 }
 
 void draw() {
+  if (lives <= 0) {
+    textSize(50);
+    textAlign(CENTER, CENTER);
+    text("Game Over!", width/2, height/2);
+    return;
+  }
+  
   image(track, width/ 2, height / 2);
   if (waveOngoing == true) {
-    runBloons();
     manageWave();
-    frame++;
+    runBloons();
   }
+  
+  if (testFrames == 0) {
+    addProj();
+  }
+  
+  runProjs();
   
   drawGUI();
   drawButtons();
-  circle(mouseX, mouseY, 10);
   
   //drawMonkeys();
   //System.out.println(frameRate);
+  interactionQueue = new ArrayList<Bloon>();
+  testFrames++;
 }
 
 void manageWave() {
@@ -51,26 +64,30 @@ void manageWave() {
       buttons.get(0).setImage("images/preround.png");
       frame = 0;
       waveProgress = 0;
-      speedLevel = 1;
+      speedLevel = 0;
       frameRate(speeds[speedLevel]);
+      money += 99 + wave;
       return;
     }
     return;
   }
   
   int[] subWave = waveData[waveProgress];
-  int firstSpawnTick = subWave[0];
-  int spawnInterval = subWave[1];
-  int spawnCount = subWave[2];
-  int spawnType = subWave[3];
+  int spawnInterval = subWave[0] * 2;
+  int spawnCount = subWave[1];
+  int spawnType = subWave[2];
   
-  if (frame > firstSpawnTick + spawnInterval * (spawnCount - 1)) {
+  if (frame >= spawnInterval * spawnCount) {
+    frame = 0;
     waveProgress++;
     return; 
   }
     
-  if ((frame - firstSpawnTick) % spawnInterval == 0)
+  if (frame % spawnInterval == 0) {
     addBloon(spawnType);
+  }
+  
+  frame++;
 }
 
 void drawGUI() {
@@ -79,28 +96,33 @@ void drawGUI() {
   textSize(20);
   text(money, 1385, 65);
   text(lives, 1385, 115);
-  text("FPS: " + (int)frameRate + "/" + speeds[speedLevel], 1385, 165);
+  textAlign(LEFT, CENTER);
+  text("Wave " + wave + "/" + (waves.length - 1), 1300, 140);
+  text("FPS: " + (int)frameRate + "/" + speeds[speedLevel], 1300, 165);
+  
+  if (DRAWING_ON) {
+    for (int i = 0; i < points.size(); i++) {
+      PVector pt = points.get(i);
+      circle(pt.x, pt.y, 10);
+      text(i, pt.x + 10, pt.y - 5);
+    }
+  }
 }
 
 void mousePressed() {
-  System.out.println(mouseX + ", " + mouseY);
+  //System.out.println(mouseX + ", " + mouseY);
   activateButtons();
   
   if (mouseButton == RIGHT)
     for (int i = 0; i < 1 && bloons.size() != 0; i++)
-      bloons.get(0).live = false;
+      bloons.get(0).dmg(2);
       
   if (waveOngoing)
-    buttons.get(0).setImage(speedLevel == 1? "images/spd1.png" : "images/spd2.png");
+    buttons.get(0).setImage(speedLevel == 0? "images/spd1.png" : "images/spd2.png");
   
   if (DRAWING_ON) {
     PVector point = new PVector(mouseX, mouseY);
     points.add(point);
-  
-    track.beginDraw();
-    track.fill(255, 0, 0); // red
-    track.circle(point.x, point.y, 30);
-    track.endDraw();
   }
 }
 
@@ -112,20 +134,17 @@ void keyPressed() {
   if (DRAWING_ON) {
     if (key == 'q' || key == 'Q') {
       if (!points.isEmpty()) {
-        PVector last = points.remove(points.size() - 1);
-        track.beginDraw();
-        track.fill(0, 255, 0); // green
-        track.circle(last.x, last.y, 30);
-        track.endDraw();
+        //PVector last = 
+        points.remove(points.size() - 1);
       }
     }
   
     if (key == 'p' || key == 'P') {
       String str = "";
-      str += "{";
+      str += "{\n";
       for (int i = 0; i < points.size(); i++) {
         PVector pt = points.get(i);
-        str += "{" + int(pt.x) + ", " + int(pt.y) + "}, ";
+        str += "  {" + int(pt.x) + ", " + int(pt.y) + "}, // " + i + "\n";
       }
       str += "};";
       System.out.println(str);

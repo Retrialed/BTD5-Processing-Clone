@@ -1,0 +1,4 @@
+#!/bin/bash
+
+mogrify -format png *.webp
+echo "done"
