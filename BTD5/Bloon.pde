@@ -33,8 +33,8 @@ void runBloons() {
     if (!bloon.live) {
       
       //bloons.remove(i);
-      Bloon last = bloons.remove(bloons.size() - 1);
       
+      Bloon last = bloons.remove(bloons.size() - 1);
       if (bloon != last)
         bloons.set(i, last);
       
@@ -237,7 +237,7 @@ class Bloon {
       pushMatrix();
       translate(pos.x, pos.y);
       PVector dest = pathNodes[curNode];
-      rotate(atan2(dest.y - pos.y, dest.x - pos.x));
+      rotate(atan2(dest.y - pos.y, dest.x - pos.x) + (float) Math.PI);
       image(bloonSprites[typeID], 0, 0);
       popMatrix();
     } else {

@@ -1,7 +1,7 @@
-int[] speeds = {60, 120, 240};
+ int[] speeds = {60, 120, 240, 480};
 int speedLevel = 0;
 int money = 600;
-int lives = 200;
+int lives = 999999999;
 int frame = 0;
 int wave = 0;
 int waveProgress = 0;
@@ -40,7 +40,7 @@ void draw() {
     runBloons();
   }
   
-  if (testFrames % 10 == 0) {
+  if (testFrames % 2 == 0) {
     addProj(0, new PVector(width / 2, height / 2 + 150), 0);
   }
   

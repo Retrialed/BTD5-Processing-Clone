@@ -1,12 +1,13 @@
 int[][] projData = new int[][] {
-  {0, 1, 10, 20, 20, 2},
+  //type, dmg, rad, spd, time, extra...
+  {0, 1, 10, 20, 20, 3},
 };
 
 int[][][] waves = {
   //Interval, count, type
   {{}}, // index 0 stand-in
   // test wave
-  {{1, 1, 22}},
+  //{{1, 1, 22}},
   // wave 1
   {{20, 20, 0}},
   // wave 2
