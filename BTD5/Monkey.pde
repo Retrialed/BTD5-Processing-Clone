@@ -6,6 +6,7 @@ ArrayList<Monkey> monkeys = new ArrayList<Monkey>();
 
 Monkey addMonkey(int type, int xPos, int yPos) {
   Monkey monkey = new Monkey(type, xPos, yPos);
+  addMonkeyButton(monkey);
   monkeys.add(monkey);
   return monkey;
 }

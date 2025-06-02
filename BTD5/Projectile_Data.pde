@@ -3,7 +3,7 @@ void setupProjTypes() {
   ProjTypes = new ProjType[] {
     //spriteName, dmgType, damage, radius, speed, lifespan, extra
     new ProjType(new int[]{0, 1, 10, 6, 25, 2}),
-    new ProjType(new int[]{0, 1, 10, 22, 30, 10}),
+    new ProjType(new int[]{1, 1, 10, 22, 30, 10}),
   };
   
   File dir = new File("images/projs");
@@ -14,7 +14,6 @@ void setupProjTypes() {
     for (File f : files) {
       if (f.isFile() && f.getName().toLowerCase().endsWith(".png")) {
         String name = f.getName().substring(0, f.getName().length() - 4);
-        println(name);
         projSprites.put(name, loadImage(f.getAbsolutePath()));
       }
     }
@@ -31,7 +30,7 @@ void setupAttacks() {
   });
   attacks.put("Cheat", (m) -> {
     String col = new String[]{"B", "BL", "P", "R", "G", "W"}[(int) random(6)];
-    addProj(1, m.pos.copy(), m.angle, projSprites.get("laser" + col));
+    addProj(1, m.pos.copy().add(new PVector(5, -5).rotate(m.angle)), m.angle, projSprites.get("laser" + col));
   });
 }
 

@@ -4,6 +4,8 @@ Proj addProj(int type, PVector position, float angle, PImage spriteAdded) {
   Proj proj = new Proj(type, position, angle, spriteAdded);
   if (ProjTypes[type].dmgType == 0) {
     proj.addComponent(new Piercing(ProjTypes[type].extra));
+  } else if (ProjTypes[type].dmgType == 1) {
+    proj.addComponent(new Energy());
   }
   projs.add(proj);
   return proj;
@@ -83,10 +85,6 @@ class Proj {
   
   void dmg(Bloon b) {
     for (ProjComponent comp : components) {comp.onHit(b);}
-    
-    if (components.size() == 0) {
-      alreadyHit.addAll(b.dmg(type.damage));
-    }
   }
   
   void checkForBloon() {
@@ -123,5 +121,13 @@ class Piercing extends ProjComponent {
     proj.alreadyHit.addAll(b.dmg(proj.type.damage));
     p--;
     if (p <= 0) proj.live = false;
+  }
+}
+
+class Energy extends ProjComponent {
+  void onHit(Bloon b) {
+    if (!b.live) return;
+    
+    proj.alreadyHit.addAll(b.dmg(proj.type.damage));
   }
 }

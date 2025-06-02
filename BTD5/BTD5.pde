@@ -1,4 +1,4 @@
-int[] speeds = {60, 120, 240, 480};
+int[] speeds = {60, 120, 240, 480, 15, 30};
 int speedLevel = 0;
 int money = 600;
 int lives = 999999999;
@@ -11,10 +11,10 @@ Button selectedButton;
 
 PGraphics track, gui;
 
-boolean DRAWING_ON = false;
 ArrayList<PVector> points = new ArrayList<PVector>();
+boolean DRAWING_ON = false;
 
-int testFrames = 0;
+boolean CONTINUOUS_WAVES = true;
 
 void setup() {
   size(1440, 1080, P2D);
@@ -57,18 +57,12 @@ void draw() {
     runBloons();
   }
   
-  //if (testFrames % 2 == 0) {
-  //  addProj(0, new PVector(width / 2, height / 2 + 150), 0);
-  //}
-  
-  runMonkeys();
   runProjs();
-  
   drawGUI();
   runButtons();
+  runMonkeys();
   
   interactionQueue = new ArrayList<Bloon>();
-  testFrames++;
 }
 
 
@@ -86,13 +80,7 @@ void manageWave() {
   
   if (waveProgress >= waveData.length) {
     if (bloons.size() == 0) {
-      waveOngoing = false;
-      buttons.get(0).setImage("images/preround.png");
-      frame = 0;
-      waveProgress = 0;
-      speedLevel = 0;
-      frameRate(speeds[speedLevel]);
-      money += 99 + wave;
+      endWave();
       return;
     }
     return;
@@ -116,6 +104,21 @@ void manageWave() {
   frame++;
 }
 
+void startWave() {
+  waveOngoing = true;
+  wave++;
+}
+
+void endWave() {
+  waveOngoing = false;
+  buttons.get(0).setImage("images/preround.png");
+  frame = 0;
+  waveProgress = 0;
+  money += 99 + wave;
+  
+  if (CONTINUOUS_WAVES) startWave();
+}
+
 void drawGUI() {
   fill(255);
   image(gui, width/2, height/2);
@@ -124,6 +127,10 @@ void drawGUI() {
   text(money, 1385, 65);
   text(lives, 1385, 115);
   text("Bloons alive: " + bloons.size(), 1224, 27);
+  if (waveOngoing)
+    text("LMB/RMB to cycle speeds.", 1436, 1050);
+  else
+    text("Click to start wave.", 1436, 1050);
   textAlign(LEFT, CENTER);
   text("Wave " + wave + "/" + (waves.length - 1), 1300, 140);
   text("FPS: " + (int)frameRate + "/" + speeds[speedLevel], 1300, 165);
@@ -138,12 +145,7 @@ void drawGUI() {
 }
 
 void mousePressed() {
-  System.out.println(mouseX + ", " + mouseY);
   activateButtons();
-  
-  //if (mouseButton == LEFT) {
-  //  addMonkey(0, mouseX, mouseY);
-  //}
   
   //if (mouseButton == RIGHT)
   //  for (int i = 0; i < 1 && bloons.size() != 0; i++) {
@@ -161,6 +163,9 @@ void mousePressed() {
 }
 
 void keyPressed() {
+  if (key == 'c')
+    println(mouseX + ", " + mouseY);
+    
   if (key == 'e')
     for (Bloon bl : bloons)
       bl.live = false;

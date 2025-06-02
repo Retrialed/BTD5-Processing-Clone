@@ -164,7 +164,7 @@ class Bloon {
   }
   
   void move(int increment, float mult) {
-    float spdSq = type.speed * type.speed / 2025.0 * mult * mult;
+    float spdSq = sq(type.speed * mult / 45.0);
     
     while (true) {
       if (!live)
@@ -188,7 +188,7 @@ class Bloon {
       PVector dest = pathNodes[nextNode];
       float dx = dest.x - pos.x;
       float dy = dest.y - pos.y;
-      float distSq = dx * dx + dy * dy;
+      float distSq = sq(dx) + sq(dy);
       
       if (distSq <= spdSq) {
         pos.set(dest);
