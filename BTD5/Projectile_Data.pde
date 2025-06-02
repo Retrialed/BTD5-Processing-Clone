@@ -6,18 +6,34 @@ void setupProjTypes() {
     new ProjType(new int[]{1, 1, 10, 22, 30, 10}),
   };
   
-  File dir = new File("images/projs");
-  File[] files = dir.listFiles();
-
-
-  if (files != null) {
-    for (File f : files) {
-      if (f.isFile() && f.getName().toLowerCase().endsWith(".png")) {
-        String name = f.getName().substring(0, f.getName().length() - 4);
-        projSprites.put(name, loadImage(f.getAbsolutePath()));
-      }
-    }
+  String[] projSpriteNames = new String[] {
+    "basicDart",
+    "laserBL",
+    "laserB",
+    "laserG",
+    "laserP",
+    "laserR",
+    "laserW",
+  };
+  
+  for (String str : projSpriteNames) {
+    projSprites.put(str, loadImage("images/projs/" + str + ".png"));
   }
+  
+  //File dir = new File("images/projs");
+  //File[] files = dir.listFiles();
+  //println(dir.isHidden());
+  
+  //if (files != null) {
+  //  for (File f : files) {
+  //    if (f.isFile() && f.getName().toLowerCase().endsWith(".png")) {
+  //      String name = f.getName().substring(0, f.getName().length() - 4);
+  //      projSprites.put(name, loadImage(f.getAbsolutePath()));
+  //    }
+  //  }
+  //} else {
+  //  println("Projectile Data can't find Sprites directory.");
+  //}
 }
 
 Map<String, PImage> projSprites = new HashMap<>();

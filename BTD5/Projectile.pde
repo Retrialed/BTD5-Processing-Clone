@@ -39,7 +39,7 @@ class Proj {
   int time;
   float angle;
   boolean live = true;
-  ArrayList<Bloon> alreadyHit = new ArrayList<Bloon>();
+  HashMap<Bloon, Boolean> alreadyHit = new HashMap<>();
   ArrayList<ProjComponent> components = new ArrayList<>();
   
   Proj(int typeID, PVector position, float spawnAngle, PImage spriteAdded) {
@@ -90,7 +90,7 @@ class Proj {
   void checkForBloon() {
     for (Bloon b : interactionQueue) {
       if (!live) return;
-      if (alreadyHit.indexOf(b) == -1 && sq(pos.x - b.pos.x) + sq(pos.y - b.pos.y) < sq(type.radius + b.type.radius)) {
+      if (sq(pos.x - b.pos.x) + sq(pos.y - b.pos.y) < sq(type.radius + b.type.radius) && alreadyHit.get(b) == null) {
         dmg(b);
       }
     }
@@ -118,7 +118,10 @@ class Piercing extends ProjComponent {
       return;
     }
     
-    proj.alreadyHit.addAll(b.dmg(proj.type.damage));
+    ArrayList<Bloon> hit = b.dmg(proj.type.damage);
+    for (Bloon bloon : hit) {
+      proj.alreadyHit.put(bloon, true);
+    }
     p--;
     if (p <= 0) proj.live = false;
   }
@@ -128,6 +131,9 @@ class Energy extends ProjComponent {
   void onHit(Bloon b) {
     if (!b.live) return;
     
-    proj.alreadyHit.addAll(b.dmg(proj.type.damage));
+    ArrayList<Bloon> hit = b.dmg(proj.type.damage);
+    for (Bloon bloon : hit) {
+      proj.alreadyHit.put(bloon, true);
+    }
   }
 }

@@ -3,7 +3,7 @@ int speedLevel = 0;
 int money = 600;
 int lives = 999999999;
 int frame = 0;
-int wave = 0;
+int wave = 60;
 int waveProgress = 0;
 boolean waveOngoing = false;
 
