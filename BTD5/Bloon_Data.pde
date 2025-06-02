@@ -74,7 +74,7 @@ int[][][] waves = {
   //Interval, count, type
   {{}}, // index 0 stand-in
   // test wave
-  {{10, 5, 10}},
+  //{{10, 5, 10}},
   // wave 1
   {{20, 20, 0}},
   // wave 2

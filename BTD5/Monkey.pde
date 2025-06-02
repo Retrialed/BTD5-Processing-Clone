@@ -37,7 +37,7 @@ class Monkey {
   
   Bloon target() {
     for (Bloon b : interactionQueue) {
-      if (PVector.sub(b.pos, pos).magSq() < type.range * type.range) {
+      if ((!b.type.camo || (b.type.camo && false)) && PVector.sub(b.pos, pos).magSq() < sq(type.range)) {
         angle = atan2(b.pos.y - pos.y, b.pos.x - pos.x);
         return b;
       }
