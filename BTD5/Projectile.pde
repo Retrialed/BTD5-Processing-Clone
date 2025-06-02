@@ -1,7 +1,7 @@
 ArrayList<Proj> projs = new ArrayList<Proj>();
 
-Proj addProj(int type, PVector position, float angle) {
-  Proj proj = new Proj(type, position, angle);
+Proj addProj(int type, PVector position, float angle, PImage spriteAdded) {
+  Proj proj = new Proj(type, position, angle, spriteAdded);
   if (ProjTypes[type].dmgType == 0) {
     proj.addComponent(new Piercing(ProjTypes[type].extra));
   }
@@ -32,17 +32,20 @@ void runProjs() {
 
 class Proj {
   ProjType type;
-  PVector pos, vel;
+  PVector pos;
+  PImage sprite;
   int time;
+  float angle;
   boolean live = true;
   ArrayList<Bloon> alreadyHit = new ArrayList<Bloon>();
   ArrayList<ProjComponent> components = new ArrayList<>();
   
-  Proj(int typeID, PVector position, float angle) {
+  Proj(int typeID, PVector position, float spawnAngle, PImage spriteAdded) {
     type = ProjTypes[typeID];
-    vel = new PVector(type.speed, 0).rotate(angle);
     time = type.lifespan;
     pos = position;
+    angle = spawnAngle;
+    sprite = spriteAdded;
   }
   
   void addComponent(ProjComponent comp) {
@@ -56,8 +59,16 @@ class Proj {
       return;
     }
     
-    pos.add(vel);
-    checkForBloon();
+    float distRemaining = type.speed;
+    int radius = type.radius;
+    while (distRemaining > 0) {
+      if (distRemaining < radius)
+        pos.add(new PVector(distRemaining, 0).rotate(angle));
+      
+      pos.add(new PVector(radius, 0).rotate(angle));
+      distRemaining -= radius;
+      checkForBloon();
+    }
   }
   
   void drawProj() {
@@ -65,8 +76,8 @@ class Proj {
     
     pushMatrix();
     translate(pos.x, pos.y);
-    rotate(atan2(vel.y, vel.x));
-    image(type.sprite, 0, 0);
+    rotate(angle);
+    image(sprite, 0, 0);
     popMatrix();
   }
   

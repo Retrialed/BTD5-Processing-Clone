@@ -164,58 +164,51 @@ class Bloon {
   }
   
   void move(int increment, float mult) {
-    if (!live)
-      return;
-  
-    int nextNode = (increment == 1)? curNode + increment : curNode;
-  
-    if (nextNode >= pathNodes.length) {
-      lives -= type.rbe;
-      live = false;
-      return;
-    }
-  
-    if (nextNode < 0) {
-      pos.set(pathNodes[0]);
-      curNode = 0;
-      return;
-    }
-  
-    PVector dest = pathNodes[nextNode];
-    float dx = dest.x - pos.x;
-    float dy = dest.y - pos.y;
-    float distSq = dx * dx + dy * dy;
     float spdSq = type.speed * type.speed / 2025.0 * mult * mult;
-  
-    while (distSq <= spdSq) {
-      pos.set(dest);
-      spdSq -= distSq;
-  
-      curNode = constrain(curNode + increment, 0, pathNodes.length - 1);    
-      nextNode = (increment == -1) ? curNode : curNode + increment;
-  
+    
+    while (true) {
+      if (!live)
+        return;
+    
+      int nextNode = curNode;
+      if (increment == 1) nextNode++;
+    
       if (nextNode >= pathNodes.length) {
         lives -= type.rbe;
         live = false;
         return;
       }
-  
-      if (curNode + increment < 0) {
+    
+      if (nextNode < 0) {
         pos.set(pathNodes[0]);
         curNode = 0;
         return;
       }
-  
-  
-      dest = pathNodes[nextNode];
-      dx = dest.x - pos.x;
-      dy = dest.y - pos.y;
-      distSq = dx * dx + dy * dy;
+      
+      PVector dest = pathNodes[nextNode];
+      float dx = dest.x - pos.x;
+      float dy = dest.y - pos.y;
+      float distSq = dx * dx + dy * dy;
+      
+      if (distSq <= spdSq) {
+        pos.set(dest);
+        spdSq -= distSq;
+        if (increment == 1) {
+          curNode++;
+        } else if (increment == -1) {
+          curNode--;
+          if (curNode < 0) {
+            curNode = 0;
+            return;
+          }
+        }
+      } else { 
+        float scale = sqrt(spdSq / distSq);
+        pos.x += scale * dx;
+        pos.y += scale * dy;
+        return;
+      }
     }
-  
-    float scale = sqrt(spdSq / distSq);
-    pos.x += scale * dx;
-    pos.y += scale * dy;
   }
 
   

@@ -62,7 +62,7 @@ class Monkey {
   void drawMonkey() {
     pushMatrix();
     translate(pos.x, pos.y);
-    rotate(angle + (float) Math.PI / 2);
+    rotate(angle);
     image(type.sprite, 0, 0);
     popMatrix();
   }
