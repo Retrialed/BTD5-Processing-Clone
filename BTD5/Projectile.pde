@@ -39,7 +39,7 @@ class Proj {
   int time;
   float angle;
   boolean live = true;
-  HashMap<Bloon, Boolean> alreadyHit = new HashMap<>();
+  WeakHashMap<Bloon, Boolean> alreadyHit = new WeakHashMap<>();
   ArrayList<ProjComponent> components = new ArrayList<>();
   
   Proj(int typeID, PVector position, float spawnAngle, PImage spriteAdded) {
@@ -64,8 +64,10 @@ class Proj {
     float distRemaining = type.speed;
     int radius = type.radius;
     while (distRemaining > 0) {
-      if (distRemaining < radius)
+      if (distRemaining < radius) {
         pos.add(new PVector(distRemaining, 0).rotate(angle));
+        break;
+      }
       
       pos.add(new PVector(radius, 0).rotate(angle));
       distRemaining -= radius;
@@ -88,10 +90,25 @@ class Proj {
   }
   
   void checkForBloon() {
-    for (Bloon b : interactionQueue) {
-      if (!live) return;
-      if (sq(pos.x - b.pos.x) + sq(pos.y - b.pos.y) < sq(type.radius + b.type.radius) && alreadyHit.get(b) == null) {
+    if (!live) return;
+    
+    HashSet<WeakHashMap<Bloon, Boolean>>[] tiles = getTilesInRange(pos.x, pos.y, type.radius);
+    
+    //Full Coverage
+    for (WeakHashMap<Bloon, Boolean> map : tiles[0]) {
+      Set<Bloon> bloonSet = map.keySet();
+      for (Bloon b : bloonSet) {
         dmg(b);
+      }
+    }
+    
+    //Partial Coverage
+    for (WeakHashMap<Bloon, Boolean> map : tiles[1]) {
+      Set<Bloon> bloonSet = map.keySet();
+      for (Bloon b : bloonSet) {
+        if (sq(pos.x - b.pos.x) + sq(pos.y - b.pos.y) < sq(type.radius + b.type.radius) && alreadyHit.get(b) == null) {
+          dmg(b);
+        }
       }
     }
   }
@@ -113,7 +130,7 @@ class Piercing extends ProjComponent {
   void onHit(Bloon b) {
     if (!b.live) return;
     
-    if (b.type.ID == 23 || b.type.ID == 44) {
+    if (b.type.ID == 23 || b.type.ID >= 44) {
       proj.live = false;
       return;
     }

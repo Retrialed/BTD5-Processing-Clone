@@ -1,7 +1,3 @@
-import java.util.HashMap;
-import java.util.Map;
-import java.util.function.Consumer;
-
 ArrayList<Monkey> monkeys = new ArrayList<Monkey>();
 
 Monkey addMonkey(int type, int xPos, int yPos) {
@@ -36,10 +32,27 @@ class Monkey {
   }
   
   Bloon target() {
-    for (Bloon b : interactionQueue) {
-      if ((!b.type.camo || (b.type.camo && false)) && PVector.sub(b.pos, pos).magSq() < sq(type.range)) {
-        angle = atan2(b.pos.y - pos.y, b.pos.x - pos.x);
-        return b;
+    HashSet<WeakHashMap<Bloon, Boolean>>[] tiles = getTilesInRange(pos.x, pos.y, type.range);
+    
+    //Full Coverage
+    for (WeakHashMap<Bloon, Boolean> map : tiles[0]) {
+      Set<Bloon> bloonSet = map.keySet();
+      for (Bloon b : bloonSet) {
+        if ((!b.type.camo || (b.type.camo && false))) {
+          angle = atan2(b.pos.y - pos.y, b.pos.x - pos.x);
+          return b;
+        }
+      }
+    }
+    
+    //Partial Coverage
+    for (WeakHashMap<Bloon, Boolean> map : tiles[1]) {
+      Set<Bloon> bloonSet = map.keySet();
+      for (Bloon b : bloonSet) {
+        if ((!b.type.camo || (b.type.camo && false)) && PVector.sub(b.pos, pos).magSq() < sq(type.range)) {
+          angle = atan2(b.pos.y - pos.y, b.pos.x - pos.x);
+          return b;
+        }
       }
     }
     

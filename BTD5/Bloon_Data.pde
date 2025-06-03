@@ -45,7 +45,9 @@ void setupBloonTypes() {
     new BloonType(41, "crzebra",  new int[]{1, 180, 23, 24, 1, 1},     new int[]{39, 40}),         // 41
     new BloonType(42, "crrainbow",new int[]{1, 220, 47, 24, 1, 1},     new int[]{41, 41}),         // 42
     new BloonType(43, "crceramic",new int[]{10, 250, 104, 24, 1, 1},   new int[]{42, 42}),         // 43
-    new BloonType(44, "clead",    new int[]{1, 100, 24, 0, 1, 1},      new int[]{29, 29})          // 44
+    new BloonType(44, "clead",    new int[]{1, 100, 24, 0, 0, 1},      new int[]{29, 29}),         // 44
+    new BloonType(45, "rlead",   new int[]{1, 100, 24, 0, 1, 0},       new int[]{18, 18}),          // 45
+    new BloonType(46, "crlead",   new int[]{1, 100, 24, 0, 1, 1},      new int[]{39, 39}),         // 46
   };
 }
 
@@ -72,9 +74,7 @@ class BloonType {
 
 int[][][] waves = {
   //Interval, count, type
-  {{}}, // index 0 stand-in
-  // test wave
-  //{{10, 5, 10}},
+  {{10, 5, 45}}, // index 0 test wave DO NOT REMOVE
   // wave 1
   {{20, 20, 0}},
   // wave 2

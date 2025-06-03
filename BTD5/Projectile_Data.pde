@@ -1,9 +1,9 @@
 ProjType[] ProjTypes;
 void setupProjTypes() {
   ProjTypes = new ProjType[] {
-    //spriteName, dmgType, damage, radius, speed, lifespan, extra
-    new ProjType(new int[]{0, 1, 10, 6, 25, 2}),
-    new ProjType(new int[]{1, 1, 10, 22, 30, 10}),
+    //dmgType, damage, radius, speed, lifespan, extra
+    new ProjType(new int[]{0, 1, 10, 10, 25, 1}),
+    new ProjType(new int[]{1, 1, 20, 32, 30, 10}),
   };
   
   String[] projSpriteNames = new String[] {

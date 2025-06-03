@@ -1,11 +1,18 @@
+import java.util.WeakHashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.function.Consumer;
+import java.util.Set;
+
 int[] speeds = {60, 120, 240, 480, 15, 30};
 int speedLevel = 0;
 int money = 600;
 int lives = 999999999;
 int frame = 0;
-int wave = 60;
+int wave = 0;
 int waveProgress = 0;
 boolean waveOngoing = false;
+float GRIDSIZE = 40;
 
 Button selectedButton;
 
@@ -13,8 +20,8 @@ PGraphics track, gui;
 
 ArrayList<PVector> points = new ArrayList<PVector>();
 boolean DRAWING_ON = false;
-
 boolean CONTINUOUS_WAVES = true;
+boolean HALP = true;
 
 void setup() {
   size(1440, 1080, P2D);
@@ -26,11 +33,11 @@ void setup() {
   frameRate(speeds[speedLevel]);
   
   setupData();
-  
 }
 
 void setupData() {
   setupMap();
+  setupGrid();
   
   setupBloonTypes();
   
@@ -41,7 +48,12 @@ void setupData() {
   setupButtons();
   for (int i = 0; i < nodes.length; i++)
     pathNodes[i] = new PVector(nodes[i][0], nodes[i][1]);
+    
+  
 }
+
+//float angle = 0;
+//float radius = 49;
 
 void draw() {
   if (lives <= 0) {
@@ -62,7 +74,15 @@ void draw() {
   runButtons();
   runMonkeys();
   
-  interactionQueue = new ArrayList<Bloon>();
+  //float rad = radians(angle);
+  //float cx = width/2 + cos(rad) * radius;
+  //float cy = height/2 + sin(rad) * radius;
+  
+  //circle(cx, cy, radius);
+  //fill(100,100,100);
+  //getTilesInRange(cx, cy, radius);
+  //fill(0);
+  //angle = (angle + 1) % 360;
 }
 
 
@@ -78,8 +98,11 @@ void draw() {
 void manageWave() {
   int[][] waveData = waves[wave];
   
+  
+  
   if (waveProgress >= waveData.length) {
     if (bloons.size() == 0) {
+      if (wave == 0) return;
       endWave();
       return;
     }

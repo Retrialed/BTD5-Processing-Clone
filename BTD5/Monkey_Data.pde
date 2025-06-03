@@ -3,7 +3,7 @@ void setupMonkeyTypes() {
   MonkeyTypes = new MonkeyType[] {
     //id, name, attackname, stats{range, delay, size, cost}
     new MonkeyType(0, "Dart", "Dart00", new int[]{120, 40, 27, 200}),
-    new MonkeyType(1, "RayGun", "Cheat", new int[]{400, 0, 40, 0}),
+    new MonkeyType(1, "RayGun", "Cheat", new int[]{400, 4, 40, 0}),
   };
 }
 

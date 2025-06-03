@@ -1,5 +1,4 @@
 ArrayList<Bloon> bloons = new ArrayList<Bloon>();
-ArrayList<Bloon> interactionQueue = new ArrayList<Bloon>();
 
 Bloon addBloon(int typeID) {
   Bloon bloon;
@@ -39,12 +38,13 @@ void runBloons() {
       if (bloon != last)
         bloons.set(i, last);
       
+      grid[bloon.inRow][bloon.inCol].remove(bloon);
       continue;
     }
       
     bloon.move();
+    bloon.refreshGrid();
     bloon.drawBloon();
-    interactionQueue.add(bloon);
     i++;
   }
 }
@@ -100,6 +100,8 @@ class Bloon {
   PVector pos = pathNodes[0].copy();
   float angle = 0;
   ArrayList<BloonComponent> components = new ArrayList<>();
+  int inRow = 0;
+  int inCol = 0;
   
   BloonType type;
   
@@ -157,6 +159,17 @@ class Bloon {
     ArrayList<Bloon> listWithSelf = new ArrayList<Bloon>();
     listWithSelf.add(this);
     return listWithSelf;
+  }
+  
+  void refreshGrid() {
+    int newRow = gridRow(pos.y);
+    int newCol = gridCol(pos.x);
+    if (newRow != inRow || newCol != inCol) {
+      grid[inRow][inCol].remove(this);
+      grid[newRow][newCol].put(this, true);
+      inRow = newRow;
+      inCol = newCol;
+    }
   }
   
   void move() {
