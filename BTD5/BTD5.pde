@@ -73,10 +73,10 @@ void draw() {
   
   
   drawBloons();
+  drawProjs();
   drawGUI();
   drawButtons();
   drawMonkeys();
-  drawProjs();
 }
 
 

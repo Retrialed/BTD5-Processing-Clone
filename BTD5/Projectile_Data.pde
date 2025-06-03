@@ -3,7 +3,7 @@ void setupProjTypes() {
   ProjTypes = new ProjType[] {
     //dmgType, damage, radius, speed, lifespan, extra
     new ProjType(new int[]{0, 1, 10, 10, 25, 1}),
-    new ProjType(new int[]{1, 1, 20, 32, 30, 10}),
+    new ProjType(new int[]{1, 1, 20, 32, 20, 10}),
   };
   
   String[] projSpriteNames = new String[] {
