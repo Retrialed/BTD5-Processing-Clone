@@ -67,22 +67,16 @@ void draw() {
   if (waveOngoing == true) {
     manageWave();
     runBloons();
+    runMonkeys();
   }
-  
   runProjs();
+  
+  
+  drawBloons();
   drawGUI();
-  runButtons();
-  runMonkeys();
-  
-  //float rad = radians(angle);
-  //float cx = width/2 + cos(rad) * radius;
-  //float cy = height/2 + sin(rad) * radius;
-  
-  //circle(cx, cy, radius);
-  //fill(100,100,100);
-  //getTilesInRange(cx, cy, radius);
-  //fill(0);
-  //angle = (angle + 1) % 360;
+  drawButtons();
+  drawMonkeys();
+  drawProjs();
 }
 
 
@@ -140,31 +134,6 @@ void endWave() {
   money += 99 + wave;
   
   if (CONTINUOUS_WAVES) startWave();
-}
-
-void drawGUI() {
-  fill(255);
-  image(gui, width/2, height/2);
-  textAlign(RIGHT, CENTER);
-  textSize(20);
-  text(money, 1385, 65);
-  text(lives, 1385, 115);
-  text("Bloons alive: " + bloons.size(), 1224, 27);
-  if (waveOngoing)
-    text("LMB/RMB to cycle speeds.", 1436, 1050);
-  else
-    text("Click to start wave.", 1436, 1050);
-  textAlign(LEFT, CENTER);
-  text("Wave " + wave + "/" + (waves.length - 1), 1300, 140);
-  text("FPS: " + (int)frameRate + "/" + speeds[speedLevel], 1300, 165);
-  
-  if (DRAWING_ON) {
-    for (int i = 0; i < points.size(); i++) {
-      PVector pt = points.get(i);
-      circle(pt.x, pt.y, 10);
-      text(i, pt.x + 10, pt.y - 5);
-    }
-  }
 }
 
 void mousePressed() {

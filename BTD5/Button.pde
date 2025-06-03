@@ -36,6 +36,31 @@ void setupButtons() {
   }
 }
 
+void drawGUI() {
+  fill(255);
+  image(gui, width/2, height/2);
+  textAlign(RIGHT, CENTER);
+  textSize(20);
+  text(money, 1385, 65);
+  text(lives, 1385, 115);
+  text("Bloons alive: " + bloons.size(), 1224, 27);
+  if (waveOngoing)
+    text("LMB/RMB to cycle speeds.", 1436, 1050);
+  else
+    text("Click to start wave.", 1436, 1050);
+  textAlign(LEFT, CENTER);
+  text("Wave " + wave + "/" + (waves.length - 1), 1300, 140);
+  text("FPS: " + (int)frameRate + "/" + speeds[speedLevel], 1300, 165);
+  
+  if (DRAWING_ON) {
+    for (int i = 0; i < points.size(); i++) {
+      PVector pt = points.get(i);
+      circle(pt.x, pt.y, 10);
+      text(i, pt.x + 10, pt.y - 5);
+    }
+  }
+}
+  
 void setupMap() {
   String setMap = "sprint_track";
   
@@ -65,21 +90,20 @@ void setupMap() {
   }
 }
 
-void runButtons() {
-  for (Button button : buttons) {
+void drawButtons() {
+  for (Button button : buttons)
     button.drawButton();
-  }
 }
 
 void activateButtons() {
   for (int i = buttons.size() - 1; i >= 0; i--) {
-    if (selectedButton != null) break;
     Button button = buttons.get(i);
-    button.select();
+    if (button.select()) break;
   }
   
-  if (selectedButton != null) {
-    selectedButton.activateButton();
+  for (int i = buttons.size() - 1; i >= 0; i--) {
+    Button button = buttons.get(i);
+    button.activateButton();
   }
 }
 
@@ -133,8 +157,8 @@ class Button {
   }
 
   void activateButton() {
-    action.run();
-    selectedButton = null;
+    if (overButton())
+      action.run();
   }
   
   void setImage(String image) {
@@ -145,10 +169,7 @@ class Button {
     text = message;
   }
   
-  void select() {
-   if (overButton())
-     selectedButton = this;
-  }
+  boolean select() {return false;}
 
   boolean overButton() {
     if (shape == 0) return sq(x - mouseX) + sq(y - mouseY) < sq(r);
@@ -182,7 +203,6 @@ Monkey selectedMonkey;
 class MonkeyButton extends Button {
   MonkeyType type;
   Monkey monkey;
-  boolean selected = false;
   
   MonkeyButton(Monkey m) {
     super(m.pos.x, m.pos.y, m.type.size, () -> {});
@@ -190,15 +210,26 @@ class MonkeyButton extends Button {
     type = m.type;
   }
   
-  void activateButton() {
-    if (selected && mouseY < 900) {
-      selected = false;
-      selectedButton = null;
-      selectedMonkey = null;
-    } else {
-      selected = true;
-      selectedMonkey = monkey;
+  boolean select() {
+    if (overButton()) {
+      selectedButton = this;
+      return true;
     }
+    else if (selectedButton == this) {
+      selectedButton = null;
+      return false;
+    }
+    
+    return false;
+  }
+  
+  void activateButton() {
+    //if (selectedButton == this && mouseY < 900) {
+    //  selectedButton = null;
+    //  selectedMonkey = null;
+    //} else {
+    //  selectedMonkey = monkey;
+    //}
   }
 
   void drawButton() {
@@ -229,7 +260,7 @@ class SpawnButton extends Button {
       }
       placing = false;
       selectedButton = null;
-    } else {
+    } else if (overButton()) {
       placing = true;
     }
       

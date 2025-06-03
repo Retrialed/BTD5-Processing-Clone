@@ -9,10 +9,13 @@ Monkey addMonkey(int type, int xPos, int yPos) {
 
 void runMonkeys() {
   for (Monkey m : monkeys) {
-    
     m.attack();
-    m.drawMonkey();
   }
+}
+
+void drawMonkeys() {
+  for (Monkey m : monkeys)
+    m.drawMonkey();
 }
 
 class Monkey {

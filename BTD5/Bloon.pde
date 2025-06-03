@@ -44,9 +44,13 @@ void runBloons() {
       
     bloon.move();
     bloon.refreshGrid();
-    bloon.drawBloon();
     i++;
   }
+}
+
+void drawBloons() {
+  for (Bloon b : bloons)
+    b.drawBloon();
 }
 
 class RegrowBloon extends Bloon {

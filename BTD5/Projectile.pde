@@ -26,10 +26,13 @@ void runProjs() {
     
     proj.time--;
     proj.move();
-    proj.move();
-    proj.drawProj();
     i++;
   }
+}
+
+void drawProjs() {
+  for (Proj p : projs)
+    p.drawProj();
 }
 
 class Proj {
