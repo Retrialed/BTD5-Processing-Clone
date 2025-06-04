@@ -6,7 +6,9 @@ void setupButtons() {
   gui.beginDraw();
   gui.noStroke();
   gui.imageMode(CENTER);
-  gui.image(loadImage("images/sidebar.png"), width/2, height/2);
+  PImage guiImage = loadImage("images/sidebar.png");
+  guiImage.resize(width, height);
+  gui.image(guiImage, width/2, height/2);
   
   if (DRAWING_ON) {
     for (int i = 0; i < nodes.length; i++) {
@@ -68,7 +70,9 @@ void setupMap() {
   track.beginDraw();
   track.noStroke();
   track.imageMode(CENTER);
-  track.image(loadImage("images/" + setMap + "-map.png"), width/2, height/2);
+  PImage map = loadImage("images/" + setMap + "-map.png");
+  map.resize(width, height);
+  track.image(map, width/2, height/2);
   track.endDraw();
   
   PImage placementMask = loadImage("images/" + setMap + "-mask.png");

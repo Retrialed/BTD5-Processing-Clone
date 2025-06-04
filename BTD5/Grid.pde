@@ -27,11 +27,11 @@ float colToX(int col) {
   return (col + 0.5) * GRIDSIZE;
 }
 
-HashSet<WeakHashMap<Bloon, Boolean>>[] getTilesInRange(float x, float y, float r) {
-  HashSet<WeakHashMap<Bloon, Boolean>>[] mapLists = (HashSet<WeakHashMap<Bloon, Boolean>>[]) new HashSet<?>[2];
+ArrayList<WeakHashMap<Bloon, Boolean>>[] getTilesInRange(float x, float y, float r) {
+  ArrayList<WeakHashMap<Bloon, Boolean>>[] mapLists = (ArrayList<WeakHashMap<Bloon, Boolean>>[]) new ArrayList<?>[2];
   
-  mapLists[0] = new HashSet<WeakHashMap<Bloon, Boolean>>();
-  mapLists[1] = new HashSet<WeakHashMap<Bloon, Boolean>>();
+  mapLists[0] = new ArrayList<WeakHashMap<Bloon, Boolean>>();
+  mapLists[1] = new ArrayList<WeakHashMap<Bloon, Boolean>>();
   
   float minX = Math.max(0, x - r - GRIDSIZE * sqrt(.5));
   float minY = Math.max(0, y - r - GRIDSIZE * sqrt(.5));

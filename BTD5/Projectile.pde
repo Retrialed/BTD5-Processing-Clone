@@ -95,7 +95,7 @@ class Proj {
   void checkForBloon() {
     if (!live) return;
     
-    HashSet<WeakHashMap<Bloon, Boolean>>[] tiles = getTilesInRange(pos.x, pos.y, type.radius);
+    ArrayList<WeakHashMap<Bloon, Boolean>>[] tiles = getTilesInRange(pos.x, pos.y, type.radius);
     
     //Full Coverage
     for (WeakHashMap<Bloon, Boolean> map : tiles[0]) {

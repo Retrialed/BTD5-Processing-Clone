@@ -35,7 +35,7 @@ class Monkey {
   }
   
   Bloon target() {
-    HashSet<WeakHashMap<Bloon, Boolean>>[] tiles = getTilesInRange(pos.x, pos.y, type.range);
+    ArrayList<WeakHashMap<Bloon, Boolean>>[] tiles = getTilesInRange(pos.x, pos.y, type.range);
     
     //Full Coverage
     for (WeakHashMap<Bloon, Boolean> map : tiles[0]) {

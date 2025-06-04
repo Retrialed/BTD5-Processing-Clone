@@ -7,12 +7,12 @@ import java.util.Set;
 int[] speeds = {60, 120, 240, 480, 15, 30};
 int speedLevel = 0;
 int money = 600;
-int lives = 999999999;
+int lives = 200;
 int frame = 0;
-int wave = 0;
+int wave = 50;
 int waveProgress = 0;
 boolean waveOngoing = false;
-float GRIDSIZE = 40;
+float GRIDSIZE = 80;
 
 Button selectedButton;
 
@@ -26,7 +26,6 @@ boolean HALP = true;
 void setup() {
   size(1440, 1080, P2D);
   smooth();
-  background(200);
   noStroke();
   ellipseMode(RADIUS);
   imageMode(CENTER);
@@ -46,8 +45,10 @@ void setupData() {
   
   setupMonkeyTypes();
   setupButtons();
+  
+  
   for (int i = 0; i < nodes.length; i++)
-    pathNodes[i] = new PVector(nodes[i][0], nodes[i][1]);
+    pathNodes[i] = new PVector(xscl(nodes[i][0]), yscl(nodes[i][1]));
     
   
 }
@@ -79,9 +80,13 @@ void draw() {
   drawMonkeys();
 }
 
+float xscl(float x) {
+  return (x - 720.0) * (width / 1440.0) + width / 2.0;
+}
 
-
-
+float yscl(float y) {
+  return (y - 540.0) * (height / 1080.0) + height / 2.0;
+}
 
 
 
