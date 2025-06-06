@@ -8,22 +8,45 @@ void setupMonkeyTypes() {
 }
 
 class MonkeyType {
-  int ID, range, delay, size, cost;
+  int ID;
   String name, atkName;
   Consumer<Monkey> attack;
   PImage sprite;
   
+  HashMap<String, Integer> stats = new HashMap(4);
   
-  MonkeyType(int typeID, String mName, String attackName, int[] stats) {
+  
+  MonkeyType(int typeID, String mName, String attackName, int[] statArr) {
     ID = typeID;
     name = mName;
-    range = stats[0];
-    delay = stats[1];
-    size = stats[2];
-    cost = stats[3];
-    atkName = attackName;
+    stats.put("range", statArr[0]);
+    stats.put("delay", statArr[1]);
+    stats.put("size", statArr[2]);
+    stats.put("cost", statArr[3]);
 
     attack = attacks.get(attackName);
     sprite = loadImage("images/monkeys/" + name + ".png");
+  }
+  
+  MonkeyType(){}
+  
+  void editStat(String stat, int inc) {
+    stats.put(stat, stats.get(stat) + inc);
+  }
+  
+  int getStat(String stat) {
+    return stats.get(stat);
+  }
+  
+  MonkeyType clone() {
+    MonkeyType clone = new MonkeyType();
+    
+    clone.ID = ID;
+    clone.name = name;
+    clone.attack = attack;
+    clone.sprite = sprite;
+    //clone.stats = stats.clone();
+    
+    return clone;
   }
 }

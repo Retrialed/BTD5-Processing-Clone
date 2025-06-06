@@ -29,13 +29,17 @@ class Monkey {
   
   Monkey(int typeID, int x, int y) {
     pos = new PVector(x, y);
-    type = MonkeyTypes[typeID];
-    delay = type.delay;
+    type = MonkeyTypes[typeID].clone();
+    delay = getStat("delay");
     attack = type.attack;
   }
   
+  int getStat(String stat) {
+    return type.getStat(stat);
+  }
+  
   Bloon target() {
-    ArrayList<WeakHashMap<Bloon, Boolean>>[] tiles = getTilesInRange(pos.x, pos.y, type.range);
+    ArrayList<WeakHashMap<Bloon, Boolean>>[] tiles = getTilesInRange(pos.x, pos.y, getStat("range"));
     
     //Full Coverage
     for (WeakHashMap<Bloon, Boolean> map : tiles[0]) {
@@ -52,7 +56,7 @@ class Monkey {
     for (WeakHashMap<Bloon, Boolean> map : tiles[1]) {
       Set<Bloon> bloonSet = map.keySet();
       for (Bloon b : bloonSet) {
-        if ((!b.type.camo || (b.type.camo && false)) && PVector.sub(b.pos, pos).magSq() < sq(type.range)) {
+        if ((!b.type.camo || (b.type.camo && false)) && PVector.sub(b.pos, pos).magSq() < sq(getStat("range"))) {
           angle = atan2(b.pos.y - pos.y, b.pos.x - pos.x);
           return b;
         }
@@ -63,6 +67,7 @@ class Monkey {
   }
   
   void attack() {
+    println(delay);
     if (delay > 0) {
       delay--;
       return;
@@ -71,7 +76,7 @@ class Monkey {
     Bloon target = target();
     if (target == null) return; 
     else {
-      delay = type.delay;
+      delay = getStat("delay");
       attack.accept(this);
     }
   }

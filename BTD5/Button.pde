@@ -7,7 +7,7 @@ void setupButtons() {
   gui.noStroke();
   gui.imageMode(CENTER);
   PImage guiImage = loadImage("images/sidebar.png");
-  guiImage.resize(width, height);
+  //guiImage.resize(width, height);
   gui.image(guiImage, width/2, height/2);
   
   if (DRAWING_ON) {
@@ -71,7 +71,7 @@ void setupMap() {
   track.noStroke();
   track.imageMode(CENTER);
   PImage map = loadImage("images/" + setMap + "-map.png");
-  map.resize(width, height);
+  //map.resize(width, height);
   track.image(map, width/2, height/2);
   track.endDraw();
   
@@ -209,7 +209,7 @@ class MonkeyButton extends Button {
   Monkey monkey;
   
   MonkeyButton(Monkey m) {
-    super(m.pos.x, m.pos.y, m.type.size, () -> {});
+    super(m.pos.x, m.pos.y, m.getStat("size"), () -> {});
     monkey = m;
     type = m.type;
   }
@@ -239,7 +239,7 @@ class MonkeyButton extends Button {
   void drawButton() {
     if (selectedButton == this) {
       fill(50, 50, 50, 100);
-      circle(monkey.pos.x, monkey.pos.y, type.range);
+      circle(monkey.pos.x, monkey.pos.y, type.getStat("range"));
       fill(255);
     }
   }
@@ -251,7 +251,7 @@ class SpawnButton extends Button {
   boolean placing = false;
   
   SpawnButton(MonkeyType monkeyType) {
-    super(monkeyType.ID % 2 == 0? 1302 : 1392, monkeyType.ID / 2 * 88 + 240, monkeyType.size, () -> {});
+    super(monkeyType.ID % 2 == 0? 1302 : 1392, monkeyType.ID / 2 * 88 + 240, monkeyType.getStat("size"), () -> {});
     type = monkeyType;
     img = type.sprite;
   }
@@ -260,7 +260,7 @@ class SpawnButton extends Button {
     if (placing) {
       if (canSpawn()) {
         addMonkey(type.ID, mouseX, mouseY);
-        money -= type.cost;
+        money -= type.getStat("cost");
       }
       placing = false;
       selectedButton = null;
@@ -271,12 +271,12 @@ class SpawnButton extends Button {
   }
   
   boolean canSpawn() {
-    if (money < type.cost || mouseX != constrain(mouseX, 0, 1247) || mouseY != constrain(mouseY, 0, 900)) return false;
+    if (money < type.getStat("cost") || mouseX != constrain(mouseX, 0, 1247) || mouseY != constrain(mouseY, 0, 900)) return false;
     if (placementGrid[mouseX][mouseY] > 0) return false;
     for (Monkey m : monkeys) {
       float dx = m.pos.x - mouseX;
       float dy = m.pos.y - mouseY;
-      if (sq(dx) + sq(dy) < sq(m.type.size) + sq(type.size)) {
+      if (sq(dx) + sq(dy) < sq(m.getStat("size")) + sq(type.getStat("size"))) {
         return false;
       }
     }
@@ -291,7 +291,7 @@ class SpawnButton extends Button {
       else
         fill(255, 0, 0, 100);
         
-      circle(mouseX, mouseY, type.range);
+      circle(mouseX, mouseY, type.getStat("range"));
       fill(255);
       image(img, mouseX, mouseY);
       return;

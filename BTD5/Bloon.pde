@@ -244,6 +244,9 @@ class Bloon {
     } else {
       image(type.sprite, pos.x, pos.y);
     }
+    
+    fill(255);
+    text(hp, pos.x, pos.y);
   }
 }
 

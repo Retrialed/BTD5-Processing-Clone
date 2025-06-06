@@ -6,7 +6,7 @@ void setupGrid() {
   grid = (WeakHashMap<Bloon, Boolean>[][]) new WeakHashMap<?, ?>[rows][cols];
   for (int r = 0; r < grid.length; r++) {
     for (int c = 0; c < grid[r].length; c++) {
-      grid[r][c] = new WeakHashMap<Bloon, Boolean>();
+      grid[r][c] = new WeakHashMap<Bloon, Boolean>(100);
     }
   }
 }

@@ -21,7 +21,7 @@ PGraphics track, gui;
 ArrayList<PVector> points = new ArrayList<PVector>();
 boolean DRAWING_ON = false;
 boolean CONTINUOUS_WAVES = true;
-boolean HALP = true;
+boolean HALP = false;
 
 void setup() {
   size(1440, 1080, P2D);
@@ -48,9 +48,7 @@ void setupData() {
   
   
   for (int i = 0; i < nodes.length; i++)
-    pathNodes[i] = new PVector(xscl(nodes[i][0]), yscl(nodes[i][1]));
-    
-  
+    pathNodes[i] = new PVector((nodes[i][0]), (nodes[i][1]));
 }
 
 //float angle = 0;
@@ -80,13 +78,13 @@ void draw() {
   drawMonkeys();
 }
 
-float xscl(float x) {
-  return (x - 720.0) * (width / 1440.0) + width / 2.0;
-}
+//float xscl(float x) {
+//  return (x - 720.0) * (width / 1440.0) + width / 2.0;
+//}
 
-float yscl(float y) {
-  return (y - 540.0) * (height / 1080.0) + height / 2.0;
-}
+//float yscl(float y) {
+//  return (y - 540.0) * (height / 1080.0) + height / 2.0;
+//}
 
 
 
