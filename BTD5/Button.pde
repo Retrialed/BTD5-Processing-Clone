@@ -25,11 +25,17 @@ void setupButtons() {
       startWave();
       return;
     }
-    if (mouseButton == LEFT)
-      speedLevel = (speedLevel + 1) % speeds.length;
-    else
-      speedLevel = (speedLevel + speeds.length - 1) % speeds.length;
-    frameRate(speeds[speedLevel]);
+    if (mouseButton == LEFT) {
+      speedLevel += inverseSpeed? -1 : 1;
+      if (speedLevel == 1) {
+        inverseSpeed = false;
+      }
+    } else if (mouseButton == RIGHT) {
+      if (speedLevel == 1) {
+        inverseSpeed = true;
+      }
+      speedLevel += inverseSpeed? 1 : -1;
+    }
   }).setImage("images/preround.png");
   
   addButton(1100, 1050, 50, () -> addBloon(10)).setText("Moab");
@@ -58,8 +64,8 @@ void drawGUI() {
   
   if (selectedMonkey != null) {
     textAlign(CENTER, CENTER);
-    text(selectedMonkey.type.name, 100, 950);
-    image(selectedMonkey.type.sprite, 100, 1000);
+    text(selectedMonkey.name, 100, 950);
+    image(selectedMonkey.sprite, 100, 1000);
   } else {
     textAlign(LEFT, CENTER);
     text("Wave " + wave + "/" + (waves.length - 1), 50, 975);
@@ -67,11 +73,12 @@ void drawGUI() {
     
     
     textAlign(RIGHT, CENTER);
-    text("FPS: " + (int)frameRate + "/" + speeds[speedLevel], 1240, 980);
+    text("FPS: " + (int)frameRate + "/" + 60, 1240, 960);
     if (waveOngoing)
-      text("LMB/RMB to cycle speeds.", 1240, 960);
+      text("LMB/RMB to cycle speeds.", 1240, 940);
     else
-      text("Click to start wave.", 1240, 960);
+      text("Click to start wave.", 1240, 940);
+    text("Speed Multiplier: " + (inverseSpeed? "1 / " + speedLevel : speedLevel), 1240, 980);
   }
 }
 
@@ -184,13 +191,11 @@ class Button {
 }
 
 class MonkeyButton extends Button {
-  MonkeyType type;
   Monkey monkey;
   
   MonkeyButton(Monkey m) {
-    super(m.pos.x, m.pos.y, m.getStat("size"), () -> {});
+    super(m.pos.x, m.pos.y, m.size, () -> {});
     monkey = m;
-    type = m.type;
   }
   
   boolean select() {
@@ -223,64 +228,8 @@ class MonkeyButton extends Button {
   void drawButton() {
     if (selectedButton == this) {
       fill(50, 50, 50, 100);
-      circle(monkey.pos.x, monkey.pos.y, type.getStat("range"));
+      circle(monkey.pos.x, monkey.pos.y, monkey.range);
       fill(255);
     }
-  }
-}
-
-
-class SpawnButton extends Button {
-  MonkeyType type;
-  boolean placing = false;
-  
-  SpawnButton(MonkeyType monkeyType) {
-    super(monkeyType.ID % 2 == 0? 1302 : 1392, monkeyType.ID / 2 * 88 + 240, monkeyType.getStat("size"), () -> {});
-    type = monkeyType;
-    img = type.sprite;
-  }
-  
-  void activateButton() {
-    if (placing) {
-      if (canSpawn()) {
-        addMonkey(type.ID, mouseX, mouseY);
-        money -= type.getStat("cost");
-      }
-      placing = false;
-      selectedButton = null;
-    } else if (overButton()) {
-      placing = true;
-    }
-      
-  }
-  
-  boolean canSpawn() {
-    if (money < type.getStat("cost") || mouseX != constrain(mouseX, 0, 1247) || mouseY != constrain(mouseY, 0, 900)) return false;
-    if (placementGrid[mouseX][mouseY] > 0) return false;
-    for (Monkey m : monkeys) {
-      float dx = m.pos.x - mouseX;
-      float dy = m.pos.y - mouseY;
-      if (sq(dx) + sq(dy) < sq(m.getStat("size")) + sq(type.getStat("size"))) {
-        return false;
-      }
-    }
-    
-    return true;
-  }
-  
-  void drawButton() {
-    if (placing) {
-      if (canSpawn())
-        fill(50, 50, 50, 100);
-      else
-        fill(255, 0, 0, 100);
-        
-      circle(mouseX, mouseY, type.getStat("range"));
-      fill(255);
-      image(img, mouseX, mouseY);
-      return;
-    }
-      
-    image(img, x, y);
   }
 }

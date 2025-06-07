@@ -18,34 +18,16 @@ void drawMonkeys() {
     m.drawMonkey();
 }
 
-class Monkey {
-  MonkeyType type;
-  
+class Monkey extends MonkeyType{
   PVector pos;
   float angle = 0;
   ArrayList<WeakHashMap<Bloon, Boolean>>[] tiles;
-  
-  
-  int ID;
-  String name, atkName;
-  Consumer<Monkey> attack;
-  PImage sprite;
-  int range, delay, size, cost;
+  int delay;
   
   Monkey(int typeID, int x, int y) {
-    type = MonkeyTypes[typeID].clone();
+    super(MonkeyTypes[typeID]);
     pos = new PVector(x, y);
-    tiles = getTilesInRange(pos.x, pos.y, type.range);
-    
-    
-    ID = type.ID;
-    name = type.name;
-    attack = type.attack;
-    sprite = type.sprite;
-    range = type.range;
-    delay = type.delay;
-    size = type.size;
-    cost = type.cost;
+    tiles = getTilesInRange(pos.x, pos.y, range);
   }
   
   Bloon target() {
@@ -64,7 +46,7 @@ class Monkey {
     for (WeakHashMap<Bloon, Boolean> map : tiles[1]) {
       Set<Bloon> bloonSet = map.keySet();
       for (Bloon b : bloonSet) {
-        if ((!b.type.camo || (b.type.camo && false)) && PVector.sub(b.pos, pos).magSq() < sq(type.range)) {
+        if ((!b.type.camo || (b.type.camo && false)) && PVector.sub(b.pos, pos).magSq() < sq(range)) {
           angle = atan2(b.pos.y - pos.y, b.pos.x - pos.x);
           return b;
         }
@@ -83,7 +65,7 @@ class Monkey {
     Bloon target = target();
     if (target == null) return; 
     else {
-      delay = getStat("delay");
+      delay = cooldown;
       attack.accept(this);
     }
   }
@@ -92,7 +74,76 @@ class Monkey {
     pushMatrix();
     translate(pos.x, pos.y);
     rotate(angle);
-    image(type.sprite, 0, 0);
+    image(sprite, 0, 0);
     popMatrix();
+  }
+}
+
+class SpawnButton extends Button {
+  MonkeyType type;
+  boolean placing = false;
+  
+  SpawnButton(MonkeyType monkeyType) {
+    super(monkeyType.ID % 2 == 0? 1302 : 1392, monkeyType.ID / 2 * 88 + 240, monkeyType.size, () -> {});
+    type = monkeyType;
+    img = type.sprite;
+  }
+  
+  void activateButton() {
+    if (placing) {
+      if (canSpawn()) {
+        addMonkey(type.ID, mouseX, mouseY);
+        money -= type.cost;
+      }
+      placing = false;
+      selectedButton = null;
+    } else if (overButton()) {
+      placing = true;
+    }
+      
+  }
+  
+  boolean canSpawn() {
+    if (money < type.cost || mouseX != constrain(mouseX, 0, 1247) || mouseY != constrain(mouseY, 0, 900)) return false;
+    for (int x = mouseX - type.size; x <= mouseX + type.size; x++) {
+      for (int y = mouseY - type.size; y <= mouseY + type.size; y++) {
+        float dx = x - mouseX;
+        float dy = y - mouseY;
+        
+        if (dx * dx + dy * dy > sq(type.size)) continue;
+        
+        if (placementGrid[x][y] > 0) return false;
+      }
+    }
+    
+    for (Monkey m : monkeys) {
+      float dx = m.pos.x - mouseX;
+      float dy = m.pos.y - mouseY;
+      if (sq(dx) + sq(dy) < sq(m.size + type.size)) {
+        return false;
+      }
+    }
+    
+    return true;
+  }
+  
+  void drawButton() {
+    if (placing) {
+      if (canSpawn())
+        fill(50, 50, 50, 100);
+      else
+        fill(255, 0, 0, 100);
+        
+      circle(mouseX, mouseY, type.range);
+      image(img, mouseX, mouseY);
+      circle(mouseX, mouseY, type.size);
+      fill(50, 50, 50, 100);
+      for (Monkey m : monkeys) {
+        circle(m.pos.x, m.pos.y, m.size);
+      }
+      return;
+    }
+      
+    image(img, x, y);
   }
 }

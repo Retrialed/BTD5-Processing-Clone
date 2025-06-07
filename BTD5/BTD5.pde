@@ -5,12 +5,13 @@ import java.util.function.Consumer;
 import java.util.Set;
 import java.util.LinkedList;
 
-int[] speeds = {60, 120, 240, 480, 15, 30};
-int speedLevel = 0;
+int speedLevel = 1;
+int frameWait = 1;
+boolean inverseSpeed = false;
 int money = 600;
 int lives = 9999999;
 int frame = 0;
-int wave = 0;
+int wave = 40;
 int waveProgress = 0;
 boolean waveOngoing = false;
 float GRIDSIZE = 80;
@@ -21,7 +22,7 @@ PGraphics track, gui;
 
 ArrayList<PVector> points = new ArrayList<PVector>();
 boolean DRAWING_ON = false;
-boolean CONTINUOUS_WAVES = false;
+boolean CONTINUOUS_WAVES = true;
 boolean HALP = false;
 
 void setup() {
@@ -31,7 +32,6 @@ void setup() {
   ellipseMode(RADIUS);
   rectMode(RADIUS);
   imageMode(CENTER);
-  frameRate(speeds[speedLevel]);
   
   setupData();
 }
@@ -65,12 +65,28 @@ void draw() {
   }
   
   image(track, width/ 2, height / 2);
-  if (waveOngoing == true) {
-    manageWave();
-    runBloons();
-    runMonkeys();
+  
+  if (!inverseSpeed || !waveOngoing) {
+    for (int i = 0; i < (waveOngoing? speedLevel : 1); i++) {
+      if (waveOngoing == true) {
+        manageWave();
+        runBloons();
+        runMonkeys();
+        }
+      runProjs();
+    }
+  } else if (inverseSpeed && frameWait >= speedLevel) {
+    if (waveOngoing == true) {
+      manageWave();
+      runBloons();
+      runMonkeys();
+      }
+    runProjs();
+    
+    frameWait = 1;
+  } else {
+    frameWait++;
   }
-  runProjs();
   
   
   drawBloons();
@@ -79,20 +95,6 @@ void draw() {
   drawButtons();
   drawMonkeys();
 }
-
-//float xscl(float x) {
-//  return (x - 720.0) * (width / 1440.0) + width / 2.0;
-//}
-
-//float yscl(float y) {
-//  return (y - 540.0) * (height / 1080.0) + height / 2.0;
-//}
-
-
-
-
-
-
 
 void manageWave() {
   int[][] waveData = waves[wave];
@@ -151,7 +153,7 @@ void mousePressed() {
   //  }
       
   if (waveOngoing)
-    buttons.get(0).setImage(speedLevel == 0? "images/spd1.png" : "images/spd2.png");
+    buttons.get(0).setImage(speedLevel == 1? "images/spd1.png" : "images/spd2.png");
   
   if (DRAWING_ON) {
     PVector point = new PVector(mouseX, mouseY);

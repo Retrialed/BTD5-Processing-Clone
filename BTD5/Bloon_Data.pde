@@ -68,7 +68,7 @@ class BloonType {
     regrow = stats[4] == 1;
     camo = stats[5] == 1;
     children = childrenID;
-    sprite = loadImage("images/bloons/" + name + ".png");
+    sprite = loadImage("images/bloons/scaled/" + name + ".png");
   }
 }
 
