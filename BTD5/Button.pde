@@ -1,5 +1,7 @@
 ArrayList<Button> buttons = new ArrayList<Button>();
+ArrayList<Button> selectedMonkeyButtons = new ArrayList<Button>();
 int[][] placementGrid;
+Monkey selectedMonkey;
 
 void setupButtons() {
   gui = createGraphics(width, height);
@@ -30,8 +32,8 @@ void setupButtons() {
     frameRate(speeds[speedLevel]);
   }).setImage("images/preround.png");
   
-  addButton(100, 1000, 50, () -> addBloon(10)).setText("Moab");
-  addButton(200, 1000, 50, () -> addBloon(22)).setText("Regrow Ceram");
+  addButton(1100, 1050, 50, () -> addBloon(10)).setText("Moab");
+  addButton(1200, 1050, 50, () -> addBloon(22)).setText("Regrow Ceram");
   
   for (MonkeyType type : MonkeyTypes) {
     addSpawnButton(type);
@@ -45,14 +47,6 @@ void drawGUI() {
   textSize(20);
   text(money, 1385, 65);
   text(lives, 1385, 115);
-  text("Bloons alive: " + bloons.size(), 1224, 27);
-  if (waveOngoing)
-    text("LMB/RMB to cycle speeds.", 1436, 1050);
-  else
-    text("Click to start wave.", 1436, 1050);
-  textAlign(LEFT, CENTER);
-  text("Wave " + wave + "/" + (waves.length - 1), 1300, 140);
-  text("FPS: " + (int)frameRate + "/" + speeds[speedLevel], 1300, 165);
   
   if (DRAWING_ON) {
     for (int i = 0; i < points.size(); i++) {
@@ -61,36 +55,23 @@ void drawGUI() {
       text(i, pt.x + 10, pt.y - 5);
     }
   }
-}
   
-void setupMap() {
-  String setMap = "sprint_track";
-  
-  track = createGraphics(width, height);
-  track.beginDraw();
-  track.noStroke();
-  track.imageMode(CENTER);
-  PImage map = loadImage("images/" + setMap + "-map.png");
-  //map.resize(width, height);
-  track.image(map, width/2, height/2);
-  track.endDraw();
-  
-  PImage placementMask = loadImage("images/" + setMap + "-mask.png");
-  placementMask.loadPixels();
-  placementGrid = new int[placementMask.width][placementMask.height];
-  
-  color red = color(255, 0 , 0);
-  color blue = color(0, 0, 255);
-  
-  for (int x = 0; x < placementGrid.length; x++) {
-    for (int y = 0; y < placementGrid[x].length; y++) {
-      int i = x + y * placementMask.width;
-      if (placementMask.pixels[i] == red) {
-        placementGrid[x][y] = 1;
-      } else if (placementMask.pixels[i] == blue) {
-        placementGrid[x][y] = 2;
-      }
-    }
+  if (selectedMonkey != null) {
+    textAlign(CENTER, CENTER);
+    text(selectedMonkey.type.name, 100, 950);
+    image(selectedMonkey.type.sprite, 100, 1000);
+  } else {
+    textAlign(LEFT, CENTER);
+    text("Wave " + wave + "/" + (waves.length - 1), 50, 975);
+    text("Bloons alive: " + bloons.size(), 50, 1000);
+    
+    
+    textAlign(RIGHT, CENTER);
+    text("FPS: " + (int)frameRate + "/" + speeds[speedLevel], 1240, 980);
+    if (waveOngoing)
+      text("LMB/RMB to cycle speeds.", 1240, 960);
+    else
+      text("Click to start wave.", 1240, 960);
   }
 }
 
@@ -137,7 +118,7 @@ Button addMonkeyButton(Monkey m) {
 
 class Button {
   float x, y, r;
-  float x1, x2, y1, y2;
+  float l, w;
   int shape;
   String text;
   PImage img;
@@ -151,11 +132,11 @@ class Button {
     shape = 0;
   }
   
-  Button(float x1, float y1, float x2, float y2, Runnable funct) {
-    this.x1 = x1;
-    this.x2 = x2;
-    this.y1 = y1;
-    this.y2 = y2;
+  Button(float xPos, float yPos, float len, float wid, Runnable funct) {
+    x = xPos;
+    y = yPos;
+    l = len;
+    w = wid;
     action = funct;
     shape = 1;
   }
@@ -177,7 +158,7 @@ class Button {
 
   boolean overButton() {
     if (shape == 0) return sq(x - mouseX) + sq(y - mouseY) < sq(r);
-    if (shape == 1) return mouseX == constrain(mouseX, x1, x2) && mouseY == constrain(mouseY, y1, y2);
+    if (shape == 1) return mouseX == constrain(mouseX, x - l, x + l) && mouseY == constrain(mouseY, y - w, y + w);
     return true;
   }
 
@@ -192,7 +173,7 @@ class Button {
     if (text != null && shape == 1) {
       textAlign(CENTER, CENTER);
       fill(50, 50, 50, 100);
-      rect(x1, y1, x2, y2);
+      rect(x, y, l, w);
       fill(255);
       text(text, x, y);
     }
@@ -201,8 +182,6 @@ class Button {
     image(img, x, y);
   }
 }
-
-Monkey selectedMonkey;
 
 class MonkeyButton extends Button {
   MonkeyType type;
@@ -216,24 +195,29 @@ class MonkeyButton extends Button {
   
   boolean select() {
     if (overButton()) {
-      selectedButton = this;
-      return true;
-    }
-    else if (selectedButton == this) {
-      selectedButton = null;
-      return false;
-    }
+      if (selectedButton == this) {
+        selectedButton = null;
+        selectedMonkey = null;
+        return true;
+      } else {
+        selectedButton = this;
+        return true;
+      }
+    } 
+    
     
     return false;
   }
   
   void activateButton() {
-    //if (selectedButton == this && mouseY < 900) {
-    //  selectedButton = null;
-    //  selectedMonkey = null;
-    //} else {
-    //  selectedMonkey = monkey;
-    //}
+    if (selectedButton == this) {
+      selectedMonkey = monkey;
+    }
+    
+    if (!overButton() && selectedButton == this) {
+        selectedButton = null;
+        selectedMonkey = null;
+    }
   }
 
   void drawButton() {

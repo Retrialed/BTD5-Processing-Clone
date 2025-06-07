@@ -51,12 +51,12 @@ ArrayList<WeakHashMap<Bloon, Boolean>>[] getTilesInRange(float x, float y, float
         mapLists[0].add(grid[row][col]);
         if (!HALP) continue;
         fill(0, 255, 0, 100);
-        circle(col * GRIDSIZE + GRIDSIZE / 2, row * GRIDSIZE + GRIDSIZE / 2, GRIDSIZE / 2);
+        square(xVal, yVal, GRIDSIZE / 2);
       } else if (dist < partialCoverRadius) {
         mapLists[1].add(grid[row][col]);
         if (!HALP) continue;
         fill(255, 0, 0, 100);
-        circle(col * GRIDSIZE + GRIDSIZE / 2, row * GRIDSIZE + GRIDSIZE / 2, GRIDSIZE / 2);
+        square(xVal, yVal, GRIDSIZE / 2);
       }
     }
   }

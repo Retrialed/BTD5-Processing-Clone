@@ -3,13 +3,14 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.Set;
+import java.util.LinkedList;
 
 int[] speeds = {60, 120, 240, 480, 15, 30};
 int speedLevel = 0;
 int money = 600;
-int lives = 200;
+int lives = 9999999;
 int frame = 0;
-int wave = 50;
+int wave = 0;
 int waveProgress = 0;
 boolean waveOngoing = false;
 float GRIDSIZE = 80;
@@ -20,7 +21,7 @@ PGraphics track, gui;
 
 ArrayList<PVector> points = new ArrayList<PVector>();
 boolean DRAWING_ON = false;
-boolean CONTINUOUS_WAVES = true;
+boolean CONTINUOUS_WAVES = false;
 boolean HALP = false;
 
 void setup() {
@@ -28,6 +29,7 @@ void setup() {
   smooth();
   noStroke();
   ellipseMode(RADIUS);
+  rectMode(RADIUS);
   imageMode(CENTER);
   frameRate(speeds[speedLevel]);
   
@@ -182,6 +184,37 @@ void keyPressed() {
       }
       str += "};";
       System.out.println(str);
+    }
+  }
+}
+
+void setupMap() {
+  String setMap = "sprint_track";
+  
+  track = createGraphics(width, height);
+  track.beginDraw();
+  track.noStroke();
+  track.imageMode(CENTER);
+  PImage map = loadImage("images/" + setMap + "-map.png");
+  //map.resize(width, height);
+  track.image(map, width/2, height/2);
+  track.endDraw();
+  
+  PImage placementMask = loadImage("images/" + setMap + "-mask.png");
+  placementMask.loadPixels();
+  placementGrid = new int[placementMask.width][placementMask.height];
+  
+  color red = color(255, 0 , 0);
+  color blue = color(0, 0, 255);
+  
+  for (int x = 0; x < placementGrid.length; x++) {
+    for (int y = 0; y < placementGrid[x].length; y++) {
+      int i = x + y * placementMask.width;
+      if (placementMask.pixels[i] == red) {
+        placementGrid[x][y] = 1;
+      } else if (placementMask.pixels[i] == blue) {
+        placementGrid[x][y] = 2;
+      }
     }
   }
 }

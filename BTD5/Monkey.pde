@@ -22,25 +22,33 @@ class Monkey {
   MonkeyType type;
   
   PVector pos;
-  int delay;
   float angle = 0;
+  ArrayList<WeakHashMap<Bloon, Boolean>>[] tiles;
   
+  
+  int ID;
+  String name, atkName;
   Consumer<Monkey> attack;
+  PImage sprite;
+  int range, delay, size, cost;
   
   Monkey(int typeID, int x, int y) {
-    pos = new PVector(x, y);
     type = MonkeyTypes[typeID].clone();
-    delay = getStat("delay");
+    pos = new PVector(x, y);
+    tiles = getTilesInRange(pos.x, pos.y, type.range);
+    
+    
+    ID = type.ID;
+    name = type.name;
     attack = type.attack;
-  }
-  
-  int getStat(String stat) {
-    return type.getStat(stat);
+    sprite = type.sprite;
+    range = type.range;
+    delay = type.delay;
+    size = type.size;
+    cost = type.cost;
   }
   
   Bloon target() {
-    ArrayList<WeakHashMap<Bloon, Boolean>>[] tiles = getTilesInRange(pos.x, pos.y, getStat("range"));
-    
     //Full Coverage
     for (WeakHashMap<Bloon, Boolean> map : tiles[0]) {
       Set<Bloon> bloonSet = map.keySet();
@@ -56,7 +64,7 @@ class Monkey {
     for (WeakHashMap<Bloon, Boolean> map : tiles[1]) {
       Set<Bloon> bloonSet = map.keySet();
       for (Bloon b : bloonSet) {
-        if ((!b.type.camo || (b.type.camo && false)) && PVector.sub(b.pos, pos).magSq() < sq(getStat("range"))) {
+        if ((!b.type.camo || (b.type.camo && false)) && PVector.sub(b.pos, pos).magSq() < sq(type.range)) {
           angle = atan2(b.pos.y - pos.y, b.pos.x - pos.x);
           return b;
         }
@@ -67,7 +75,6 @@ class Monkey {
   }
   
   void attack() {
-    println(delay);
     if (delay > 0) {
       delay--;
       return;

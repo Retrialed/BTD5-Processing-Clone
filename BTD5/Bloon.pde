@@ -21,8 +21,7 @@ RegrowBloon addRegrowBloon(int typeID) {
 
 RegrowBloon addRegrowBloon(int typeID, RegrowBloon parent) {
   RegrowBloon regrow = addRegrowBloon(typeID);
-  regrow.heritage.addAll(parent.heritage);
-  regrow.heritage.add(parent.type.ID);
+  regrow.heritage = new Node(regrow.type.ID, parent.heritage);
   return regrow;
 }
 
@@ -54,19 +53,21 @@ void drawBloons() {
 }
 
 class RegrowBloon extends Bloon {
-   ArrayList<Integer> heritage = new ArrayList<>();
+   Node heritage;
    int timer = 0;
    
    RegrowBloon(BloonType type) {
      super(type);
+     heritage = new Node(type.ID);
    }
    
    void move() {
      super.move();
      timer++;
-     if (timer >= 120 && heritage.size() != 0) {
+     if (timer >= 120 && heritage.next != null) {
        timer = 0;
-       type = BloonTypes[(heritage.remove(heritage.size() - 1))];
+       heritage = heritage.next;
+       type = BloonTypes[heritage.data];
        hp = type.hp;
      }
    }
@@ -78,10 +79,10 @@ class RegrowBloon extends Bloon {
     if (!live)
       return new ArrayList<Bloon>();
     
-    money += Math.min(hp, amt);
-    hp -= amt;
-    if (hp <= 0) {
-      live = false;
+      money += Math.min(hp, amt);
+      hp -= amt;
+      if (hp <= 0) {
+        live = false;
       
       ArrayList<Bloon> spawned = new ArrayList<Bloon>();
     
@@ -245,11 +246,25 @@ class Bloon {
       image(type.sprite, pos.x, pos.y);
     }
     
-    fill(255);
-    text(hp, pos.x, pos.y);
+    //fill(255);
+    //text(hp, pos.x, pos.y);
   }
 }
 
 abstract class BloonComponent {
   Bloon bloon;
+}
+
+class Node {
+  int data;
+  Node next;
+  
+  Node(int d, Node n) {
+    data = d;
+    next = n;
+  }
+  
+  Node(int d){
+    data = d;
+  }
 }
