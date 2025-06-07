@@ -26,7 +26,11 @@ void setupButtons() {
       return;
     }
     if (mouseButton == LEFT) {
-      speedLevel += inverseSpeed? -1 : 1;
+      //speedLevel += inverseSpeed? -1 : 1;
+      if (inverseSpeed)
+        speedLevel -= 1;
+      else
+        speedLevel *= 2;
       if (speedLevel == 1) {
         inverseSpeed = false;
       }
@@ -34,7 +38,10 @@ void setupButtons() {
       if (speedLevel == 1) {
         inverseSpeed = true;
       }
-      speedLevel += inverseSpeed? 1 : -1;
+      if (inverseSpeed)
+        speedLevel += 1;
+      else
+        speedLevel *= 0.5;
     }
   }).setImage("images/preround.png");
   
