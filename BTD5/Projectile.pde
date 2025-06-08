@@ -1,12 +1,13 @@
 ArrayList<Proj> projs = new ArrayList<Proj>();
+HashMap<String, Supplier<ProjComponent>> componentRegistry = new HashMap<>() {{
+  put("Piercing", Piercing::new);
+  put("Sharp", Sharp::new);
+  put("Universal", Universal::new);
+  put("Crushing", Crushing::new);
+}};
 
-Proj addProj(int type, PVector position, float angle, PImage spriteAdded) {
-  Proj proj = new Proj(type, position, angle, spriteAdded);
-  if (ProjTypes[type].dmgType == 0) {
-    proj.addComponent(new Piercing(ProjTypes[type].extra));
-  } else if (ProjTypes[type].dmgType == 1) {
-    proj.addComponent(new Energy());
-  }
+Proj addProj(ProjType type, PVector position, float angle) {
+  Proj proj = new Proj(type, position, angle);
   projs.add(proj);
   return proj;
 }
@@ -24,7 +25,6 @@ void runProjs() {
       continue;
     }
     
-    proj.time--;
     proj.move();
     i++;
   }
@@ -35,22 +35,27 @@ void drawProjs() {
     p.drawProj();
 }
 
-class Proj {
-  ProjType type;
+class Proj extends ProjType{
   PVector pos;
-  PImage sprite;
-  int time;
+  float distanceRemaining;
   float angle;
   boolean live = true;
   WeakHashMap<Bloon, Boolean> alreadyHit = new WeakHashMap<>();
   ArrayList<ProjComponent> components = new ArrayList<>();
   
-  Proj(int typeID, PVector position, float spawnAngle, PImage spriteAdded) {
-    type = ProjTypes[typeID];
-    time = type.lifespan;
+  Proj(ProjType type, PVector position, float spawnAngle) {
+    super(type);
+    distanceRemaining = distance;
     pos = position;
     angle = spawnAngle;
-    sprite = spriteAdded;
+    try {
+      for (String className : comps) {
+        Supplier<ProjComponent> factory = componentRegistry.get(className);
+        if (factory != null) addComponent(factory.get());
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
   }
   
   void addComponent(ProjComponent comp) {
@@ -59,21 +64,23 @@ class Proj {
   }
   
   void move() {
-    if (time < 0 || !live) {
-      live = false;
-      return;
-    }
-    
-    float distRemaining = type.speed;
-    int radius = type.radius;
+    float distRemaining = speed;
     while (distRemaining > 0) {
+      if (distanceRemaining < 0 || !live) {
+        live = false;
+        return;
+      }
+      
       if (distRemaining < radius) {
         pos.add(new PVector(distRemaining, 0).rotate(angle));
+        distance -= distRemaining;
+        checkForBloon();
         break;
       }
       
       pos.add(new PVector(radius, 0).rotate(angle));
       distRemaining -= radius;
+      distanceRemaining -= radius;
       checkForBloon();
     }
   }
@@ -89,18 +96,26 @@ class Proj {
   }
   
   void dmg(Bloon b) {
-    for (ProjComponent comp : components) {comp.onHit(b);}
+    for (ProjComponent comp : components) {
+      comp.activate("HitBloon", b);
+    }
+  }
+  
+  void end() {
+    live = false;
   }
   
   void checkForBloon() {
     if (!live) return;
     
-    ArrayList<WeakHashMap<Bloon, Boolean>>[] tiles = getTilesInRange(pos.x, pos.y, type.radius);
+    ArrayList<WeakHashMap<Bloon, Boolean>>[] tiles = getTilesInRange(pos.x, pos.y, radius);
     
     //Full Coverage
     for (WeakHashMap<Bloon, Boolean> map : tiles[0]) {
       Set<Bloon> bloonSet = map.keySet();
       for (Bloon b : bloonSet) {
+        if (!b.live) continue;
+        if (!live) return;
         dmg(b);
       }
     }
@@ -109,51 +124,10 @@ class Proj {
     for (WeakHashMap<Bloon, Boolean> map : tiles[1]) {
       Set<Bloon> bloonSet = map.keySet();
       for (Bloon b : bloonSet) {
-        if (sq(pos.x - b.pos.x) + sq(pos.y - b.pos.y) < sq(type.radius + b.type.radius) && alreadyHit.get(b) == null) {
+        if (sq(pos.x - b.pos.x) + sq(pos.y - b.pos.y) < sq(radius + b.type.radius) && alreadyHit.get(b) == null && b.live && live) {
           dmg(b);
         }
       }
-    }
-  }
-}
-
-abstract class ProjComponent {
-  Proj proj;
-  
-  void onHit(Bloon b) {}
-}
-
-class Piercing extends ProjComponent {
-  int p;
-  
-  Piercing(int pierce) {
-    p = pierce;
-  }
-  
-  void onHit(Bloon b) {
-    if (!b.live) return;
-    
-    if (b.type.ID == 23 || b.type.ID >= 44) {
-      proj.live = false;
-      return;
-    }
-    
-    ArrayList<Bloon> hit = b.dmg(proj.type.damage);
-    for (Bloon bloon : hit) {
-      proj.alreadyHit.put(bloon, true);
-    }
-    p--;
-    if (p <= 0) proj.live = false;
-  }
-}
-
-class Energy extends ProjComponent {
-  void onHit(Bloon b) {
-    if (!b.live) return;
-    
-    ArrayList<Bloon> hit = b.dmg(proj.type.damage);
-    for (Bloon bloon : hit) {
-      proj.alreadyHit.put(bloon, true);
     }
   }
 }

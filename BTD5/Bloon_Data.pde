@@ -74,7 +74,7 @@ class BloonType {
 
 int[][][] waves = {
   //Interval, count, type
-  {{10, 5, 45}}, // index 0 test wave DO NOT REMOVE
+  {}, // index 0 test wave DO NOT REMOVE
   // wave 1
   {{20, 20, 0}},
   // wave 2

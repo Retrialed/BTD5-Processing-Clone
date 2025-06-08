@@ -1,15 +1,35 @@
 ArrayList<Monkey> monkeys = new ArrayList<Monkey>();
+enum TargetMode {
+  FIRST, LAST, STRONGEST, CLOSEST;
+  
+  public TargetMode next() {
+    return values()[(this.ordinal() + 1) % values().length];
+  }
+  
+  public TargetMode prev() {
+    return values()[(this.ordinal() + values().length + 1) % values().length];
+  }
+}
 
 Monkey addMonkey(int type, int xPos, int yPos) {
   Monkey monkey = new Monkey(type, xPos, yPos);
-  addMonkeyButton(monkey);
+  Button b = new MonkeyButton(monkey);
+  buttons.add(b);
   monkeys.add(monkey);
   return monkey;
 }
 
 void runMonkeys() {
-  for (Monkey m : monkeys) {
+  int i = 0;
+  while (i < monkeys.size()) {
+    Monkey m = monkeys.get(i);
+    if (!m.live) {
+      monkeys.remove(i);
+      continue;
+    }
+    
     m.attack();
+    i++;
   }
 }
 
@@ -21,8 +41,11 @@ void drawMonkeys() {
 class Monkey extends MonkeyType{
   PVector pos;
   float angle = 0;
+  boolean live = true;
   ArrayList<WeakHashMap<Bloon, Boolean>>[] tiles;
-  int delay;
+  int[] upgrades = new int[]{0, 0};
+  ArrayList<Consumer<Proj>> projUpgrades = new ArrayList();
+  TargetMode targetingMode = TargetMode.FIRST;
   
   Monkey(int typeID, int x, int y) {
     super(MonkeyTypes[typeID]);
@@ -30,14 +53,35 @@ class Monkey extends MonkeyType{
     tiles = getTilesInRange(pos.x, pos.y, range);
   }
   
+  void refreshTiles() {
+    tiles = getTilesInRange(pos.x, pos.y, range);
+  }
+  
+  void addProjUpgrade(Consumer<Proj> upgrade) {
+    projUpgrades.add(upgrade);
+  }
+  
+  boolean upgrade(int path) {
+    if (upgrades[path] >= upgradeTree[path].length || upgradeTree[path][upgrades[path]].cost > money || (upgrades[(path + 1) % 2] >= 3 && upgrades[path] >= 2)) return false;
+    
+    Upgrade upg = upgradeTree[path][upgrades[path]];
+    money -= upg.cost;
+    upg.apply(this);
+    
+    upgrades[path] += 1;
+    return true;
+  }
+  
   Bloon target() {
+    Bloon bloon = null;
+    ArrayList<Bloon> bloonsInRange = new ArrayList();
+    
     //Full Coverage
     for (WeakHashMap<Bloon, Boolean> map : tiles[0]) {
       Set<Bloon> bloonSet = map.keySet();
       for (Bloon b : bloonSet) {
         if ((!b.type.camo || (b.type.camo && false))) {
-          angle = atan2(b.pos.y - pos.y, b.pos.x - pos.x);
-          return b;
+          bloonsInRange.add(b);
         }
       }
     }
@@ -46,27 +90,61 @@ class Monkey extends MonkeyType{
     for (WeakHashMap<Bloon, Boolean> map : tiles[1]) {
       Set<Bloon> bloonSet = map.keySet();
       for (Bloon b : bloonSet) {
-        if ((!b.type.camo || (b.type.camo && false)) && PVector.sub(b.pos, pos).magSq() < sq(range)) {
-          angle = atan2(b.pos.y - pos.y, b.pos.x - pos.x);
-          return b;
+        if ((!b.type.camo || camoVision) && PVector.sub(b.pos, pos).magSq() < sq(range)) {
+          bloonsInRange.add(b);
         }
       }
     }
     
-    return null;
+    for (Bloon b : bloonsInRange){
+      boolean bool = false;
+      if (bloon == null)
+        bool = true;
+      else {
+        switch (targetingMode) {
+          case FIRST: 
+            bool = isFirster(b, bloon);
+            break;
+          case LAST: 
+            bool = !isFirster(b, bloon);
+            break;
+          case STRONGEST: 
+            bool = isStronger(b, bloon);
+            break;
+          case 
+            CLOSEST: bool = isCloser(b, bloon);
+            break;
+        }
+      }
+      
+      if (bool)
+        bloon = b;
+    }
+    
+    if (bloon != null)
+      angle = atan2(bloon.pos.y - pos.y, bloon.pos.x - pos.x);
+    return bloon;
+  }
+  
+  boolean isFirster(Bloon b1, Bloon b2) {
+    return b1.curNode > b2.curNode || (b1.curNode == b2.curNode && b1.sqDistToNextNode() < b2.sqDistToNextNode());
+  }
+  
+  boolean isStronger(Bloon b1, Bloon b2) {
+    return b1.type.rbe > b2.type.rbe || (b1.type.rbe == b2.type.rbe && isFirster(b1, b2));
+  }
+  
+  boolean isCloser(Bloon b1, Bloon b2) {
+    return PVector.sub(pos, b1.pos).magSq() < PVector.sub(pos, b2.pos).magSq();
   }
   
   void attack() {
-    if (delay > 0) {
-      delay--;
-      return;
-    }
+    if (!attack.cooldown()) return;
     
     Bloon target = target();
     if (target == null) return; 
     else {
-      delay = cooldown;
-      attack.accept(this);
+      attack.activate(this);
     }
   }
   
@@ -76,74 +154,5 @@ class Monkey extends MonkeyType{
     rotate(angle);
     image(sprite, 0, 0);
     popMatrix();
-  }
-}
-
-class SpawnButton extends Button {
-  MonkeyType type;
-  boolean placing = false;
-  
-  SpawnButton(MonkeyType monkeyType) {
-    super(monkeyType.ID % 2 == 0? 1302 : 1392, monkeyType.ID / 2 * 88 + 240, monkeyType.size, () -> {});
-    type = monkeyType;
-    img = type.sprite;
-  }
-  
-  void activateButton() {
-    if (placing) {
-      if (canSpawn()) {
-        addMonkey(type.ID, mouseX, mouseY);
-        money -= type.cost;
-      }
-      placing = false;
-      selectedButton = null;
-    } else if (overButton()) {
-      placing = true;
-    }
-      
-  }
-  
-  boolean canSpawn() {
-    if (money < type.cost || mouseX != constrain(mouseX, 0, 1247) || mouseY != constrain(mouseY, 0, 900)) return false;
-    for (int x = mouseX - type.size; x <= mouseX + type.size; x++) {
-      for (int y = mouseY - type.size; y <= mouseY + type.size; y++) {
-        float dx = x - mouseX;
-        float dy = y - mouseY;
-        
-        if (dx * dx + dy * dy > sq(type.size)) continue;
-        
-        if (placementGrid[x][y] > 0) return false;
-      }
-    }
-    
-    for (Monkey m : monkeys) {
-      float dx = m.pos.x - mouseX;
-      float dy = m.pos.y - mouseY;
-      if (sq(dx) + sq(dy) < sq(m.size + type.size)) {
-        return false;
-      }
-    }
-    
-    return true;
-  }
-  
-  void drawButton() {
-    if (placing) {
-      if (canSpawn())
-        fill(50, 50, 50, 100);
-      else
-        fill(255, 0, 0, 100);
-        
-      circle(mouseX, mouseY, type.range);
-      image(img, mouseX, mouseY);
-      circle(mouseX, mouseY, type.size);
-      fill(50, 50, 50, 100);
-      for (Monkey m : monkeys) {
-        circle(m.pos.x, m.pos.y, m.size);
-      }
-      return;
-    }
-      
-    image(img, x, y);
   }
 }

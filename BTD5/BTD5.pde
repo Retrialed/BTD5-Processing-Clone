@@ -2,13 +2,15 @@ import java.util.WeakHashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.LinkedList;
 
 int speedLevel = 1;
 int frameWait = 1;
 boolean inverseSpeed = false;
-int money = 600;
+int money = 4000;
 int lives = 9999999;
 int frame = 0;
 int wave = 0;
@@ -22,7 +24,7 @@ PGraphics track, gui;
 
 ArrayList<PVector> points = new ArrayList<PVector>();
 boolean DRAWING_ON = false;
-boolean CONTINUOUS_WAVES = true;
+boolean CONTINUOUS_WAVES = false;
 boolean HALP = false;
 
 void setup() {
@@ -43,7 +45,6 @@ void setupData() {
   setupBloonTypes();
   
   setupProjTypes();
-  setupAttacks();
   
   setupMonkeyTypes();
   setupButtons();
@@ -57,43 +58,49 @@ void setupData() {
 //float radius = 49;
 
 void draw() {
-  if (lives <= 0) {
-    textSize(50);
-    textAlign(CENTER, CENTER);
-    text("Game Over!", width/2, height/2);
-    return;
-  }
+  try {
+    if (lives <= 0) {
+      textSize(50);
+      textAlign(CENTER, CENTER);
+      text("Game Over!", width/2, height/2);
+      return;
+    }
   
-  image(track, width/ 2, height / 2);
-  
-  if (!inverseSpeed || !waveOngoing) {
-    for (int i = 0; i < (waveOngoing? speedLevel : 1); i++) {
+    image(track, width/ 2, height / 2);
+    
+    if (!inverseSpeed || !waveOngoing) {
+      for (int i = 0; i < (waveOngoing? speedLevel : 1); i++) {
+        if (waveOngoing == true) {
+          manageWave();
+          runBloons();
+          if (lives <= 0) break;
+          }
+        runMonkeys();
+        runProjs();
+      }
+    } else if (inverseSpeed && frameWait >= speedLevel) {
       if (waveOngoing == true) {
         manageWave();
         runBloons();
-        runMonkeys();
         }
-      runProjs();
-    }
-  } else if (inverseSpeed && frameWait >= speedLevel) {
-    if (waveOngoing == true) {
-      manageWave();
-      runBloons();
       runMonkeys();
-      }
-    runProjs();
+      runProjs();
+      
+      frameWait = 1;
+    } else {
+      frameWait++;
+    }
     
-    frameWait = 1;
-  } else {
-    frameWait++;
+    
+    drawBloons();
+    drawProjs();
+    drawGUI();
+    drawButtons();
+    drawMonkeys();
+  } catch (Exception e) {
+    e.printStackTrace(); 
+    exit();
   }
-  
-  
-  drawBloons();
-  drawProjs();
-  drawGUI();
-  drawButtons();
-  drawMonkeys();
 }
 
 void manageWave() {
@@ -145,12 +152,6 @@ void endWave() {
 
 void mousePressed() {
   activateButtons();
-  
-  //if (mouseButton == RIGHT)
-  //  for (int i = 0; i < 1 && bloons.size() != 0; i++) {
-  //    Bloon b = bloons.get(0);
-  //    b.dmg(b.hp);
-  //  }
       
   if (waveOngoing)
     buttons.get(0).setImage(speedLevel == 1? "images/spd1.png" : "images/spd2.png");

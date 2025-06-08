@@ -104,16 +104,10 @@ class Bloon {
   boolean live = true;
   PVector pos = pathNodes[0].copy();
   float angle = 0;
-  ArrayList<BloonComponent> components = new ArrayList<>();
   int inRow = 0;
   int inCol = 0;
   
   BloonType type;
-  
-  void addComponent(BloonComponent comp) {
-    comp.bloon = this;
-    components.add(comp);
-  }
   
   Bloon(BloonType bType) {
     type = bType;
@@ -228,6 +222,13 @@ class Bloon {
       }
     }
   }
+  
+  float sqDistToNextNode() {
+    PVector dest = pathNodes[curNode + 1];
+    float dx = dest.x - pos.x;
+    float dy = dest.y - pos.y;
+    return sq(dx) + sq(dy);
+  }
 
   
   void drawBloon() {
@@ -246,13 +247,12 @@ class Bloon {
       image(type.sprite, pos.x, pos.y);
     }
     
-    //fill(255);
-    //text(hp, pos.x, pos.y);
+    if (HALP) {
+      fill(255);
+      textAlign(CENTER, CENTER);
+      text(hp, pos.x, pos.y);
+    }
   }
-}
-
-abstract class BloonComponent {
-  Bloon bloon;
 }
 
 class Node {
