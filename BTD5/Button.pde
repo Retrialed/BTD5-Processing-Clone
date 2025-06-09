@@ -373,6 +373,9 @@ class SpawnButton extends Button {
       circle(mouseX, mouseY, type.range);
       image(img, mouseX, mouseY);
       circle(mouseX, mouseY, type.size);
+      fill(255);
+      textAlign(CENTER, CENTER);
+      text("Cost: " + type.cost, mouseX, mouseY - 40);
       fill(50, 50, 50, 100);
       for (Monkey m : monkeys) {
         circle(m.pos.x, m.pos.y, m.size);

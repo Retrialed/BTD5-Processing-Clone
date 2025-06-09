@@ -23,7 +23,7 @@ Button selectedButton;
 PGraphics track, gui;
 
 ArrayList<PVector> points = new ArrayList<PVector>();
-boolean DRAWING_ON = false;
+boolean DRAWING_ON = true;
 boolean CONTINUOUS_WAVES = false;
 boolean HALP = false;
 

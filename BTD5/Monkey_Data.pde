@@ -68,8 +68,8 @@ void setupMonkeyTypes() {
       }), 
     },
     {
-      new Upgrade(0, "Double attack damage", (m) -> {
-        m.addProjUpgrade((p) -> {p.damage *= 2;});
+      new Upgrade(0, "Add Camo Vision", (m) -> {
+        m.camoVision = true;
       }), 
       new Upgrade(0, "Double projectile speed", (m) -> {
         m.addProjUpgrade((p) -> {p.speed *= 2;});
