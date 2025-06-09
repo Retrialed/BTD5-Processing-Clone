@@ -365,6 +365,10 @@ class SpawnButton extends Button {
   
   void drawButton() {
     if (placing) {
+      if (HALP) {
+        getTilesInRange(mouseX, mouseY, type.range);
+      }
+      
       if (canSpawn())
         fill(50, 50, 50, 100);
       else

@@ -23,7 +23,7 @@ Button selectedButton;
 PGraphics track, gui;
 
 ArrayList<PVector> points = new ArrayList<PVector>();
-boolean DRAWING_ON = true;
+boolean DRAWING_ON = false;
 boolean CONTINUOUS_WAVES = false;
 boolean HALP = false;
 
@@ -155,11 +155,6 @@ void mousePressed() {
       
   if (waveOngoing)
     buttons.get(0).setImage(speedLevel == 1? "images/spd1.png" : "images/spd2.png");
-  
-  if (DRAWING_ON) {
-    PVector point = new PVector(mouseX, mouseY);
-    points.add(point);
-  }
 }
 
 void keyPressed() {
@@ -176,6 +171,11 @@ void keyPressed() {
         //PVector last = 
         points.remove(points.size() - 1);
       }
+    }
+    
+    if (key == 'a' || key == 'A') {
+      PVector point = new PVector(mouseX, mouseY);
+      points.add(point);
     }
   
     if (key == 'p' || key == 'P') {
