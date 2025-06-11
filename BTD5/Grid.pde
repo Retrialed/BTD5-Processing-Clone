@@ -63,3 +63,29 @@ ArrayList<WeakHashMap<Bloon, Boolean>>[] getTilesInRange(float x, float y, float
   
   return mapLists;
 }
+
+ArrayList<Bloon> bloonsInRange(ArrayList<WeakHashMap<Bloon, Boolean>>[] tiles, PVector pos, float range) {
+  ArrayList<Bloon> bloonsInRange = new ArrayList();
+  
+  //Full Coverage
+  for (WeakHashMap<Bloon, Boolean> map : tiles[0]) {
+    Set<Bloon> bloonSet = map.keySet();
+    for (Bloon b : bloonSet) {
+      if ((!b.type.camo || (b.type.camo && false)) && b.live) {
+        bloonsInRange.add(b);
+      }
+    }
+  }
+  
+  //Partial Coverage
+  for (WeakHashMap<Bloon, Boolean> map : tiles[1]) {
+    Set<Bloon> bloonSet = map.keySet();
+    for (Bloon b : bloonSet) {
+      if (PVector.sub(b.pos, pos).magSq() < sq(range) && b.live) {
+        bloonsInRange.add(b);
+      }
+    }
+  }
+  
+  return bloonsInRange;
+} 

@@ -6,11 +6,12 @@ import java.util.function.Function;
 import java.util.Set;
 import java.util.function.Supplier;
 import java.util.LinkedList;
+import java.util.Iterator;
 
 int speedLevel = 1;
 int frameWait = 1;
 boolean inverseSpeed = false;
-int money = 4000;
+int money = 100000;
 int lives = 9999999;
 int frame = 0;
 int wave = 0;
@@ -24,7 +25,7 @@ PGraphics track, gui;
 
 ArrayList<PVector> points = new ArrayList<PVector>();
 boolean DRAWING_ON = false;
-boolean CONTINUOUS_WAVES = false;
+boolean CONTINUOUS_WAVES = true;
 boolean HALP = false;
 
 void setup() {
@@ -106,11 +107,9 @@ void draw() {
 void manageWave() {
   int[][] waveData = waves[wave];
   
-  
-  
   if (waveProgress >= waveData.length) {
     if (bloons.size() == 0) {
-      if (wave == 0) return;
+      if (wave == 0 || wave == waves.length - 1) return;
       endWave();
       return;
     }
@@ -220,4 +219,10 @@ void setupMap() {
       }
     }
   }
+}
+
+abstract class Component {
+  String eventName;
+  
+  abstract void activate(Object... args);
 }

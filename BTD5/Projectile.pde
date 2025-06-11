@@ -1,10 +1,4 @@
 ArrayList<Proj> projs = new ArrayList<Proj>();
-HashMap<String, Supplier<ProjComponent>> componentRegistry = new HashMap<>() {{
-  put("Piercing", Piercing::new);
-  put("Sharp", Sharp::new);
-  put("Universal", Universal::new);
-  put("Crushing", Crushing::new);
-}};
 
 Proj addProj(ProjType type, PVector position, float angle) {
   Proj proj = new Proj(type, position, angle);
@@ -41,7 +35,7 @@ class Proj extends ProjType{
   float angle;
   boolean live = true;
   WeakHashMap<Bloon, Boolean> alreadyHit = new WeakHashMap<>();
-  ArrayList<ProjComponent> components = new ArrayList<>();
+  HashMap<String, ArrayList<ProjComponent>> components = (HashMap<String, ArrayList<ProjComponent>>) new HashMap();
   
   Proj(ProjType type, PVector position, float spawnAngle) {
     super(type);
@@ -50,7 +44,7 @@ class Proj extends ProjType{
     angle = spawnAngle;
     try {
       for (String className : comps) {
-        Supplier<ProjComponent> factory = componentRegistry.get(className);
+        Supplier<ProjComponent> factory = projComponentRegistry.get(className);
         if (factory != null) addComponent(factory.get());
       }
     } catch (Exception e) {
@@ -60,10 +54,18 @@ class Proj extends ProjType{
   
   void addComponent(ProjComponent comp) {
     comp.proj = this;
-    components.add(comp);
+    components.computeIfAbsent(comp.eventName, k -> new ArrayList<ProjComponent>()).add(comp);
+  }
+  
+  void activateComponents(String eventName, Object... args) {
+    ArrayList<ProjComponent> comps = components.get(eventName);
+    if (comps != null)
+      for (ProjComponent comp : comps)
+        comp.activate(args);
   }
   
   void move() {
+    activateComponents("Moving");
     float distRemaining = speed;
     while (distRemaining > 0) {
       if (distanceRemaining < 0 || !live) {
@@ -96,9 +98,7 @@ class Proj extends ProjType{
   }
   
   void dmg(Bloon b) {
-    for (ProjComponent comp : components) {
-      comp.activate("HitBloon", b);
-    }
+    activateComponents("HitBloon", b);
   }
   
   void end() {
@@ -106,28 +106,9 @@ class Proj extends ProjType{
   }
   
   void checkForBloon() {
-    if (!live) return;
-    
-    ArrayList<WeakHashMap<Bloon, Boolean>>[] tiles = getTilesInRange(pos.x, pos.y, radius);
-    
-    //Full Coverage
-    for (WeakHashMap<Bloon, Boolean> map : tiles[0]) {
-      Set<Bloon> bloonSet = map.keySet();
-      for (Bloon b : bloonSet) {
-        if (!b.live) continue;
-        if (!live) return;
-        dmg(b);
-      }
-    }
-    
-    //Partial Coverage
-    for (WeakHashMap<Bloon, Boolean> map : tiles[1]) {
-      Set<Bloon> bloonSet = map.keySet();
-      for (Bloon b : bloonSet) {
-        if (sq(pos.x - b.pos.x) + sq(pos.y - b.pos.y) < sq(radius + b.type.radius) && alreadyHit.get(b) == null && b.live && live) {
-          dmg(b);
-        }
-      }
+    for (Bloon b : bloonsInRange(getTilesInRange(pos.x, pos.y, radius), pos, radius)) {
+      if (!live) break;
+      dmg(b);
     }
   }
 }

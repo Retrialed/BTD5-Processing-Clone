@@ -40,7 +40,8 @@ void runBloons() {
       grid[bloon.inRow][bloon.inCol].remove(bloon);
       continue;
     }
-      
+    
+    
     bloon.move();
     bloon.refreshGrid();
     i++;
@@ -99,6 +100,22 @@ class RegrowBloon extends Bloon {
   }
 }
 
+abstract class StatusEffect extends Component{
+  Bloon bloon;
+  int timer;
+}
+
+class Reverse extends StatusEffect {
+  Reverse(){
+    eventName = "Moving";
+  }
+  
+  void activate(Object... args) {
+    if (bloon.speed > 0)
+      bloon.speed *= -1;
+  }
+}
+
 class Bloon {
   int hp, curNode;
   boolean live = true;
@@ -106,13 +123,28 @@ class Bloon {
   float angle = 0;
   int inRow = 0;
   int inCol = 0;
-  
+  float speed;
+  HashMap<String, StatusEffect> activeEffects = new HashMap();
   BloonType type;
   
   Bloon(BloonType bType) {
     type = bType;
     curNode = 0;
     hp = type.hp;
+  }
+  
+  void passTime() {
+    Iterator<Map.Entry<String, StatusEffect>> it = activeEffects.entrySet().iterator();
+
+    while (it.hasNext()) {
+      Map.Entry<String, StatusEffect> entry = it.next();
+      StatusEffect effect = entry.getValue();
+    
+      if (effect.timer < 0)
+        it.remove();
+        
+      effect.timer--;
+    }
   }
   
   ArrayList<Bloon> dmg(int amt) {
@@ -125,7 +157,7 @@ class Bloon {
       child.curNode = curNode;
       
       for (int j = 0; j < (count + 1) / 2; j++) {
-        child.move(count % 2 == 0? 1 : -1, (float) 675 / type.speed);
+        child.move(1, (float) 675 / type.speed, type.speed * (count % 2 == 0? 1 : -1));
       }
       
       count++;
@@ -171,12 +203,27 @@ class Bloon {
     }
   }
   
-  void move() {
-    move(1, 1);
+  float getSpeed() {
+    speed = type.speed;
+    
+    for (StatusEffect se : activeEffects.values())
+      if (se.eventName.equals("Moving"))
+        se.activate();
+    
+    return speed;
   }
   
-  void move(int increment, float mult) {
-    float spdSq = sq(type.speed * mult / 45.0);
+  void move() {
+    move(1, 1, getSpeed());
+  }
+  
+  void move(int increment, float mult, float speed) {
+    if (speed < 0) {
+      move(-1, 1, speed * -1);
+      return;
+    }
+      
+    float spdSq = sq(speed * mult / 45.0);
     
     while (true) {
       if (!live)

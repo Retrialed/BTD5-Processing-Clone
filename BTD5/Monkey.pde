@@ -45,12 +45,33 @@ class Monkey extends MonkeyType{
   ArrayList<WeakHashMap<Bloon, Boolean>>[] tiles;
   int[] upgrades = new int[]{0, 0};
   ArrayList<Consumer<Proj>> projUpgrades = new ArrayList();
+  HashMap<String, ArrayList<MonkeyComponent>> components = (HashMap<String, ArrayList<MonkeyComponent>>) new HashMap();
   TargetMode targetingMode = TargetMode.FIRST;
   
   Monkey(int typeID, int x, int y) {
     super(MonkeyTypes[typeID]);
     pos = new PVector(x, y);
     tiles = getTilesInRange(pos.x, pos.y, range);
+    try {
+      for (String className : comps) {
+        Supplier<MonkeyComponent> factory = monkeyComponentRegistry.get(className);
+        if (factory != null) addComponent(factory.get());
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+  }
+  
+  void addComponent(MonkeyComponent comp) {
+    comp.monkey = this;
+    components.computeIfAbsent(comp.eventName, k -> new ArrayList<MonkeyComponent>()).add(comp);
+  }
+  
+  void activateComponents(String eventName, Object... args) {
+    ArrayList<MonkeyComponent> comps = components.get(eventName);
+    if (comps != null)
+      for (MonkeyComponent comp : comps)
+        comp.activate(args);
   }
   
   void refreshTiles() {
@@ -74,29 +95,8 @@ class Monkey extends MonkeyType{
   
   Bloon target() {
     Bloon bloon = null;
-    ArrayList<Bloon> bloonsInRange = new ArrayList();
     
-    //Full Coverage
-    for (WeakHashMap<Bloon, Boolean> map : tiles[0]) {
-      Set<Bloon> bloonSet = map.keySet();
-      for (Bloon b : bloonSet) {
-        if ((!b.type.camo || (b.type.camo && false))) {
-          bloonsInRange.add(b);
-        }
-      }
-    }
-    
-    //Partial Coverage
-    for (WeakHashMap<Bloon, Boolean> map : tiles[1]) {
-      Set<Bloon> bloonSet = map.keySet();
-      for (Bloon b : bloonSet) {
-        if ((!b.type.camo || camoVision) && PVector.sub(b.pos, pos).magSq() < sq(range)) {
-          bloonsInRange.add(b);
-        }
-      }
-    }
-    
-    for (Bloon b : bloonsInRange){
+    for (Bloon b : bloonsInRange(tiles, pos, range)){
       boolean bool = false;
       if (bloon == null)
         bool = true;
@@ -121,8 +121,6 @@ class Monkey extends MonkeyType{
         bloon = b;
     }
     
-    if (bloon != null)
-      angle = atan2(bloon.pos.y - pos.y, bloon.pos.x - pos.x);
     return bloon;
   }
   
@@ -144,6 +142,7 @@ class Monkey extends MonkeyType{
     Bloon target = target();
     if (target == null) return; 
     else {
+      activateComponents("Targeting", target);
       attack.activate(this);
     }
   }
