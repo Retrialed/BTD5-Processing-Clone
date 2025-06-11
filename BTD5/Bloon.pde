@@ -41,7 +41,7 @@ void runBloons() {
       continue;
     }
     
-    
+    bloon.passTime();
     bloon.move();
     bloon.refreshGrid();
     i++;
@@ -103,16 +103,41 @@ class RegrowBloon extends Bloon {
 abstract class StatusEffect extends Component{
   Bloon bloon;
   int timer;
+  
+  StatusEffect(int timer){
+    this.timer = timer;
+  }
+  
+  StatusEffect(StatusEffect other) {
+    timer = other.timer;
+  }
+  
+  abstract StatusEffect copy();
 }
 
-class Reverse extends StatusEffect {
-  Reverse(){
+class SpeedMult extends StatusEffect {
+  float spdMult;
+  
+  SpeedMult(int timer, float mult) {
+    super(timer);
     eventName = "Moving";
+    spdMult = mult;
+  }
+  
+  SpeedMult(SpeedMult other) {
+    super(other);
+    eventName = "Moving";
+    spdMult = other.spdMult;
   }
   
   void activate(Object... args) {
-    if (bloon.speed > 0)
+    bloon.speed *= spdMult;
+    if (spdMult < 0 && bloon.speed > 0)
       bloon.speed *= -1;
+  }
+  
+  SpeedMult copy() {
+    return new SpeedMult(this);
   }
 }
 
@@ -147,6 +172,12 @@ class Bloon {
     }
   }
   
+  void addEffect(StatusEffect se) {
+    StatusEffect newSE = se.copy();
+    activeEffects.put(se.getClass().getSimpleName(), newSE);
+    newSE.bloon = this;
+  }
+  
   ArrayList<Bloon> dmg(int amt) {
     ArrayList<Bloon> spawned = dmg(amt, 1);
     
@@ -155,6 +186,10 @@ class Bloon {
     for (Bloon child : spawned) {
       child.pos = pos.copy();
       child.curNode = curNode;
+      
+      for (StatusEffect effect : activeEffects.values()) {
+        child.addEffect(effect);
+      }
       
       for (int j = 0; j < (count + 1) / 2; j++) {
         child.move(1, (float) 675 / type.speed, type.speed * (count % 2 == 0? 1 : -1));

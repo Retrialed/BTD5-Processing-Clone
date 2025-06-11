@@ -1,11 +1,18 @@
 ProjType[] projTypes;
 
-HashMap<String, Supplier<ProjComponent>> projComponentRegistry = new HashMap<>() {{
-  put("Piercing", Piercing::new);
-  put("Sharp", Sharp::new);
-  put("Universal", Universal::new);
-  put("Crushing", Crushing::new);
-  put("Homing", Homing::new);
+interface ComponentFactory {
+  ProjComponent create(Object... args);
+}
+
+HashMap<String, ComponentFactory> projComponentRegistry = new HashMap<>() {{
+  put("Piercing", args -> new Piercing(args));
+  put("GivesSlow", args -> new GivesSlow(args));
+  put("Sharp", args -> new Sharp());
+  put("Universal", args -> new Universal());
+  put("Crushing", args -> new Crushing());
+  put("Homing", args -> new Homing());
+  put("Explosive", args -> new Explosive(args));
+  put("Fragmenting", args -> new Fragmenting(args));
 }};
 
 void setupProjTypes() {
@@ -20,7 +27,9 @@ void setupProjTypes() {
     "laserW",
     "fire",
     "saw",
-    "star"
+    "star",
+    "explosion",
+    "bomb"
   };
 
   for (String str : projSpriteNames) {
@@ -28,38 +37,135 @@ void setupProjTypes() {
   }
 
   projTypes = new ProjType[] {
-    //img,                                        damage, radius, speed, distance, components
-    new ProjType(projSprites.get("basicDart"), new int[]{1, 10, 20, 200}, new String[]{"Piercing", "Sharp"}), //0
-    new ProjType(projSprites.get("laserW"), new int[]{1, 8, 40, 500}, new String[]{"Universal"}), //1
-    new ProjType(projSprites.get("spikeBall"), new int[]{1, 14, 20, 800}, new String[]{"Piercing", "Sharp"}), //2
-    new ProjType(projSprites.get("fire"), new int[]{1, 15, 15, 150}, new String[]{"Piercing", "Universal"}), //3
-    new ProjType(projSprites.get("saw"), new int[]{1, 14, 15, 150}, new String[]{"Piercing", "Sharp"}), //4
-    new ProjType(projSprites.get("star"), new int[]{1, 10, 20, 250}, new String[]{"Piercing", "Sharp"}), //5
-  };
+    //img, damage, radius, speed, distance, components
+    new ProjType(
+      projSprites.get("basicDart"), 
+      new int[]{1, 10, 20, 200}, Map.of(
+        "Piercing", new Object[]{1},
+        "Sharp", new Object[]{}
+      )
+    ), //0  
+    
+    new ProjType(
+      projSprites.get("laserW"),
+      new int[]{1, 8, 40, 500},
+      Map.of(
+        "Universal", new Object[]{}
+      )
+    ), //1
 
-  projTypes[0].extra.put("pierce", (float) 1);
-  projTypes[2].extra.put("pierce", (float) 18);
-  projTypes[3].extra.put("pierce", (float) 60);
-  projTypes[4].extra.put("pierce", (float) 2);
-  projTypes[5].extra.put("pierce", (float) 2);
+    new ProjType(
+      projSprites.get("spikeBall"),
+      new int[]{1, 14, 20, 800},
+      Map.of(
+        "Piercing", new Object[]{18},
+        "Sharp", new Object[]{}
+      )
+    ), //2
+
+    new ProjType(
+      projSprites.get("fire"),
+      new int[]{1, 15, 15, 150},
+      Map.of(
+        "Piercing", new Object[]{60},
+        "Universal", new Object[]{}
+      )
+    ), //3
+
+    new ProjType(
+      projSprites.get("saw"),
+      new int[]{1, 14, 15, 150},
+      Map.of(
+        "Sharp", new Object[]{},
+        "Piercing", new Object[]{2}
+      )
+    ), //4
+
+    new ProjType(
+      projSprites.get("star"),
+      new int[]{1, 10, 20, 250},
+      Map.of(
+        "Sharp", new Object[]{},
+        "Piercing", new Object[]{2}
+      )
+    ), //5
+
+    new ProjType(
+      projSprites.get("bomb"),
+      new int[]{1, 18, 20, 300},
+      Map.of(
+        "Explosive", new Object[]{250},
+        "Piercing", new Object[]{1}
+      )
+    ), //6
+
+    new ProjType(
+      projSprites.get("bomb"),
+      new int[]{1, 18, 20, 250},
+      Map.of(
+        "Explosive", new Object[]{150},
+        "Piercing", new Object[]{1}
+      )
+    ), //7
+    
+    new ProjType(
+      projSprites.get("basicDart"), 
+      new int[]{1, 10, 20, 300}, Map.of(
+        "Piercing", new Object[]{1},
+        "Sharp", new Object[]{}
+      )
+      ), //8  
+      
+    new ProjType(
+      projSprites.get("laserP"),
+      new int[]{1, 8, 30, 300},
+      Map.of(
+        "Piercing", new Object[]{2},
+        "Universal", new Object[]{}
+      )
+    ), //9
+      
+    new ProjType(
+      projSprites.get("laserBL"),
+      new int[]{1, 12, 30, 300},
+      Map.of(
+        "Piercing", new Object[]{2},
+        "Universal", new Object[]{}
+      )
+    ), //10
+      
+    new ProjType(
+      projSprites.get("laserR"),
+      new int[]{1, 16, 40, 800},
+      Map.of(
+        "Universal", new Object[]{}
+      )
+    ), //11
+    
+    new ProjType(
+      projSprites.get("basicDart"), 
+      new int[]{1, 10, 2000, 2000}, Map.of(
+        "Piercing", new Object[]{1},
+        "Sharp", new Object[]{}
+      )
+    ), //12  
+  };
 }
 
 Map<String, PImage> projSprites = new HashMap<>();
 
 class ProjType {
   int damage, radius, speed, distance;
-  HashMap<String, Float> extra = new HashMap();
   PImage sprite;
-  HashSet<String> comps = new HashSet();
+  HashMap<String, Object[]> comps = new HashMap();
 
-  ProjType(PImage sprite, int[] data, String[] components) {
+  ProjType(PImage sprite, int[] data, Map<String, Object[]> components) {
     damage = data[0];
     radius = data[1];
     speed = data[2];
     distance = data[3];
     this.sprite = sprite;
-    for (String s : components)
-      comps.add(s);
+    comps = new HashMap<>(components);
   }
 
   ProjType(ProjType other) {
@@ -68,8 +174,7 @@ class ProjType {
     speed = other.speed;
     distance = other.distance;
     sprite = other.sprite;
-    extra.putAll(other.extra);
-    comps = (HashSet<String>) other.comps.clone();
+    comps = new HashMap<>(other.comps);
   }
 }
 
@@ -174,6 +279,53 @@ class MultiShot extends Shot {
 
 abstract class ProjComponent extends Component {
   Proj proj;
+  boolean track = false;
+}
+
+class Explosive extends ProjComponent {
+  int radius;
+
+  Explosive(Object... args) {
+    eventName = "Death";
+    radius = (int) args[0];
+    track = true;
+  }
+
+  void activate(Object... args) {
+    PVector c = proj.pos;
+    int dmg = proj.damage;
+    
+    image(projSprites.get("explosion"), c.x, c.y);
+
+    for (Bloon b : bloonsInRange(getTilesInRange(c.x, c.y, radius), c, radius)) {
+      if (!isBlack(b)) {
+        proj.activateComponents("HitBloon", b);
+        b.dmg(dmg);
+      }
+    }
+
+  }
+}
+
+class Fragmenting extends ProjComponent {
+  int typeID;
+  
+  void fire(ProjType type, float angle) {
+    addProj(type, proj.pos.copy(), angle);
+    track = true;
+  }
+  
+  Fragmenting(Object... args) {
+    eventName = "Death";
+    typeID = (int) args[0];
+  }
+  void activate(Object... args) {
+    float angle = 0;
+    while (angle < radians(360)) {
+      fire(projTypes[typeID], angle);
+      angle += radians(45);
+    }
+  }
 }
 
 class Homing extends ProjComponent {
@@ -184,7 +336,7 @@ class Homing extends ProjComponent {
   void activate(Object... args) {
     Bloon bloon = null;
         
-    for (Bloon b : bloonsInRange(getTilesInRange(proj.pos.x, proj.pos.y, 200), proj.pos, 200)) {
+    for (Bloon b : bloonsInRange(getTilesInRange(proj.pos.x, proj.pos.y, 150), proj.pos, 150)) {
       if (bloon == null || PVector.sub(proj.pos, b.pos).magSq() < PVector.sub(proj.pos, bloon.pos).magSq())
         bloon = b;
     }
@@ -194,20 +346,47 @@ class Homing extends ProjComponent {
       float angleDiff = targetAngle - proj.angle;
       float turnSpeed = .2;
       proj.angle += constrain(angleDiff, -turnSpeed, turnSpeed);
+      proj.distanceRemaining += 10;
+    }
+  }
+}
+
+class GivesSlow extends ProjComponent {
+  float mult, probability;
+  int timer;
+  boolean affectsMOAB;
+  
+  GivesSlow(Object... args) {
+    eventName = "HitBloon";
+    timer = (int) args[0];
+    mult = (float) args[1];
+    probability = (float) args[2];
+    affectsMOAB = (boolean) args[3];
+  }
+  
+  void activate(Object... args) {
+    Bloon b = (Bloon) args[0];
+    if (Math.random() < probability && (affectsMOAB == isMoab(b))) {
+      
+      b.addEffect(new SpeedMult(timer, mult));
     }
   }
 }
 
 class Piercing extends ProjComponent {
-  Piercing() {
+  int pierce;
+  
+  Piercing(Object... args) {
     eventName = "HitBloon";
+    track = true;
+    pierce = args.length > 0? (int) args[0] : 1;
   }
 
   void activate(Object... args) {
 
-    proj.extra.put("pierce", proj.extra.get("pierce") - 1);
+    pierce--;
 
-    if (proj.extra.get("pierce") <= 0) {
+    if (pierce == 0) {
       proj.end();
     }
   }
@@ -215,13 +394,13 @@ class Piercing extends ProjComponent {
 
 class Sharp extends ProjComponent {
   Sharp() {
-    eventName = "HitBloon";
+    eventName = "Damage";
   }
 
   void activate(Object... args) {
 
     Bloon b = (Bloon) args[0];
-    if (b.type.ID == 23 || b.type.ID >= 44) {
+    if (isLead(b)) {
       proj.end();
       return;
     }
@@ -235,14 +414,14 @@ class Sharp extends ProjComponent {
 
 class Crushing extends ProjComponent {
   Crushing() {
-    eventName = "HitBloon";
+    eventName = "Damage";
   }
 
   void activate(Object... args) {
     int damage = proj.damage;
 
     Bloon b = (Bloon) args[0];
-    if (b.type.ID == 9 || b.type.ID == 22 || b.type.ID == 33 || b.type.ID == 43)
+    if (isCeramic(b))
       damage += 4;
 
     ArrayList<Bloon> hit = b.dmg(damage);
@@ -254,7 +433,7 @@ class Crushing extends ProjComponent {
 
 class Universal extends ProjComponent {
   Universal() {
-    eventName = "HitBloon";
+    eventName = "Damage";
   }
 
   void activate(Object... args) {
@@ -265,4 +444,28 @@ class Universal extends ProjComponent {
       proj.alreadyHit.put(bloon, true);
     }
   }
+}
+
+boolean isMoab(Bloon b) {
+  return 10 <= b.type.ID && b.type.ID <= 12;
+}
+
+boolean isCeramic(Bloon b) {
+  int id = b.type.ID;
+  return id == 9 || id == 22 || id == 33 || id == 43;
+}
+
+boolean isLead(Bloon b) {
+  int id = b.type.ID;
+  return id == 23 || id == 44 || id == 45 || id == 46;
+}
+
+boolean isBlack(Bloon b) {
+  int id = b.type.ID;
+  return id == 5 || id == 7 || id == 18 || id == 20 || id == 29 || id == 31 || id == 39 || id == 41;
+}
+
+boolean isIceImmune(Bloon b) {
+  int id = b.type.ID;
+  return id == 6 || id == 7 || id == 19 || id == 20 || id == 30 || id == 31 || id == 40 || id == 41;
 }

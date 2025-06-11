@@ -96,8 +96,13 @@ class Monkey extends MonkeyType{
   Bloon target() {
     Bloon bloon = null;
     
-    for (Bloon b : bloonsInRange(tiles, pos, range)){
+    for (Bloon b : bloonsInRange(tiles, pos, range)) {
+      if (b.type.camo && !camoVision) {
+        continue;
+      }
+      
       boolean bool = false;
+      
       if (bloon == null)
         bool = true;
       else {
@@ -137,13 +142,15 @@ class Monkey extends MonkeyType{
   }
   
   void attack() {
-    if (!attack.cooldown()) return;
+    for (Attack attack : attacks) {
+      if (!attack.cooldown()) continue;
     
-    Bloon target = target();
-    if (target == null) return; 
-    else {
-      activateComponents("Targeting", target);
-      attack.activate(this);
+      Bloon target = target();
+      if (target == null) continue; 
+      else {
+        activateComponents("Targeting", target);
+        attack.activate(this);
+      }
     }
   }
   

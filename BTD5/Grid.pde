@@ -71,7 +71,7 @@ ArrayList<Bloon> bloonsInRange(ArrayList<WeakHashMap<Bloon, Boolean>>[] tiles, P
   for (WeakHashMap<Bloon, Boolean> map : tiles[0]) {
     Set<Bloon> bloonSet = map.keySet();
     for (Bloon b : bloonSet) {
-      if ((!b.type.camo || (b.type.camo && false)) && b.live) {
+      if (b.live) {
         bloonsInRange.add(b);
       }
     }

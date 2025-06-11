@@ -26,7 +26,7 @@ PGraphics track, gui;
 ArrayList<PVector> points = new ArrayList<PVector>();
 boolean DRAWING_ON = false;
 boolean CONTINUOUS_WAVES = true;
-boolean HALP = false;
+boolean HALP = true;
 
 void setup() {
   size(1440, 1080, P2D);

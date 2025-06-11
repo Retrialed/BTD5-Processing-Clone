@@ -94,7 +94,7 @@ void setupButtons() {
   }
   
   if (HALP) {
-    Button add = new Button(100, 100, 50, () -> addBloon(43));
+    Button add = new Button(100, 100, 50, () -> addBloon(9));
     buttons.add(add);
     Button add1 = new Button(100, 200, 50, () -> addBloon(10));
     buttons.add(add1);
