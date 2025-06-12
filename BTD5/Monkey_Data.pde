@@ -31,7 +31,7 @@ void setupMonkeyTypes() {
     new MonkeyType(3, "Ninja Monkey", new int[]{250, 20, 500}, true, new String[]{"Rotating"}),
     new MonkeyType(4, "Bomb Tower", new int[]{200, 30, 650}, false, new String[]{"Rotating"}),
     new MonkeyType(5, "Super Monkey", new int[]{250, 40, 3000}, false, new String[]{"Rotating"}),
-    new MonkeyType(6, "Sniper Monkey", new int[]{2500, 40, 350}, false, new String[]{"Rotating"}),
+    new MonkeyType(6, "Sniper Monkey", new int[]{2500, 25, 350}, false, new String[]{"Rotating"}),
   };
 
   MonkeyTypes[0].attacks.add(new Shot(54, 0));
@@ -105,7 +105,8 @@ void setupMonkeyTypes() {
     },
     
     {
-      new Upgrade(1000, "Super range!", (m) -> {
+      new Upgrade(1000, "Super range! Super Monkey can now attack camo bloons.", (m) -> {
+        m.camoVision = true;
         m.range *= 1.25;
         m.refreshTiles();
       }),
@@ -257,6 +258,7 @@ void setupMonkeyTypes() {
       new Upgrade(680, "Converts the tower into a blade shooter that shoots out razor sharp blades that are harder for bloons to avoid.", (m) -> {
         m.attacks.get(0).delay *= 0.9;
         m.attacks.add(new MultiShot(m.attacks.get(0).delay, 4, 16, 337.5));
+        m.attacks.remove(0);
       }),
       new Upgrade(1200, "The razor blades become homing", (m) -> {
         m.attacks.get(0).projectile.comps.put("Homing", new Object[]{});
