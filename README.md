@@ -69,6 +69,8 @@ This is a much needed optimization for when there are thousands of projectiles c
 
 Additionally, each tile is defined as fully covered by a radius, in which math is no longer required to see if an agent on the tile is in radius, or only partially covered, where math is still required to check if an agent is actually in range.
 
+![Tiles Testing](images/10TilesTest.png)
+
 This improved the framerate in generally chaotic moments by over 5 times.
 
 (In regards to the strange data type, each tile on the map is a WeakHashMap used as a WeakHastSet of bloons on a tile. Bloons are deleted often, so a weak dataset is preferred to not have to manage their references. Then, each tile in range is placed into one of two arraylists of fully-covered or partially-covered tiles.)
