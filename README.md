@@ -8,7 +8,7 @@ Functionalities:
   Store an array of clickableUI. Clicking on this UI allows you to spawn towers (monkeys), upgrade, or start and end the game. For example, the fast forward button will double the framerate to make the game progress faster. (Unless it crashes)
 
   Enemy Pathfinding and Appearance
-  Enemies (Bloons) will spawn in waves, travel the path using checkpoints, and head towards the end to deplete player health. They will spawn for 100 waves (Won’t implement random waves). I will use hard coded data to spawn bloons at each wave. I already have an array of data containing this data from a past project. This will be a class. They have a unique health mechanic that will be copied from the original game.
+  Enemies (Bloons) will spawn in waves, travel the path using checkpoints, and head towards the end to deplete player health. They will spawn for 85 waves (Won’t implement random waves). I will use hard coded data to spawn bloons at each wave. I already have an array of data containing this data from a past project. This will be a class. They have a unique health mechanic that will be copied from the original game.
   Tower Placement and Mechanics
      Players can spend money to create new towers (monkeys). These will use darts to pop the enemies and stop them from reaching the end. Towers can be upgraded.
 
